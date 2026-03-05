@@ -39,3 +39,37 @@ const VisualCards: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // 3. Audio Pronunciation Feature (Using Browser Native Speech Synthesis)
+  const playAudio = (e: React.MouseEvent, wordToSpeak: string) => {
+    e.stopPropagation(); // Prevents the card from flipping back over when clicking the button
+    
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(wordToSpeak);
+      utterance.lang = 'en-US'; // Set to American English
+      utterance.rate = 0.9;     // Slightly slower for learners
+      window.speechSynthesis.speak(utterance);
+    } else {
+      alert("Sorry, your browser doesn't support text-to-speech!");
+    }
+  };
+
+  // 4. Navigation Handlers
+  const handleFlip = () => {
+    setIsFlipped(!isFlipped);
+  };
+  
+  const handleNextCard = () => {
+    setIsFlipped(false); // Reset flip state for the next card
+    
+    // Wait for the flip animation to finish before changing the content
+    setTimeout(() => {
+      if (currentIndex < cards.length - 1) {
+        setCurrentIndex(currentIndex + 1);
+      } else {
+        // Deck finished, fetch a new random batch and reset to index 0
+        setCurrentIndex(0);
+        fetchRandomCards();
+      }
+    }, 300); 
+  };
