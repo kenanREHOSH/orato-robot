@@ -10,7 +10,7 @@ import logo from "../assets/logo.png";
 const PersonalInfo = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Get user data from Step 1 (SignUp page)
   const userData = location.state || {};
 
@@ -63,7 +63,7 @@ const PersonalInfo = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 px-4 py-8">
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-8">
-        
+
         {/* Logo */}
         <div className="flex justify-center mb-6">
           <img src={logo} alt="Orato Logo" className="w-20 h-20 rounded-xl shadow-md" />
@@ -94,7 +94,7 @@ const PersonalInfo = () => {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          
+
           {/* Age */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -171,11 +171,10 @@ const PersonalInfo = () => {
               <button
                 type="button"
                 onClick={() => setLearningGoal("Travel")}
-                className={`p-4 border-2 rounded-xl transition-all ${
-                  learningGoal === "Travel"
-                    ? "border-green-500 bg-green-50 text-green-700"
-                    : "border-gray-200 hover:border-green-300"
-                }`}
+                className={`p-4 border-2 rounded-xl transition-all ${learningGoal === "Travel"
+                  ? "border-green-500 bg-green-50 text-green-700"
+                  : "border-gray-200 hover:border-green-300"
+                  }`}
               >
                 <div className="text-3xl mb-2">✈️</div>
                 <div className="font-semibold">Travel</div>
@@ -185,11 +184,10 @@ const PersonalInfo = () => {
               <button
                 type="button"
                 onClick={() => setLearningGoal("Career")}
-                className={`p-4 border-2 rounded-xl transition-all ${
-                  learningGoal === "Career"
-                    ? "border-green-500 bg-green-50 text-green-700"
-                    : "border-gray-200 hover:border-green-300"
-                }`}
+                className={`p-4 border-2 rounded-xl transition-all ${learningGoal === "Career"
+                  ? "border-green-500 bg-green-50 text-green-700"
+                  : "border-gray-200 hover:border-green-300"
+                  }`}
               >
                 <div className="text-3xl mb-2">💼</div>
                 <div className="font-semibold">Career</div>
@@ -199,11 +197,10 @@ const PersonalInfo = () => {
               <button
                 type="button"
                 onClick={() => setLearningGoal("Education")}
-                className={`p-4 border-2 rounded-xl transition-all ${
-                  learningGoal === "Education"
-                    ? "border-green-500 bg-green-50 text-green-700"
-                    : "border-gray-200 hover:border-green-300"
-                }`}
+                className={`p-4 border-2 rounded-xl transition-all ${learningGoal === "Education"
+                  ? "border-green-500 bg-green-50 text-green-700"
+                  : "border-gray-200 hover:border-green-300"
+                  }`}
               >
                 <div className="text-3xl mb-2">📚</div>
                 <div className="font-semibold">Education</div>
@@ -213,11 +210,10 @@ const PersonalInfo = () => {
               <button
                 type="button"
                 onClick={() => setLearningGoal("Personal")}
-                className={`p-4 border-2 rounded-xl transition-all ${
-                  learningGoal === "Personal"
-                    ? "border-green-500 bg-green-50 text-green-700"
-                    : "border-gray-200 hover:border-green-300"
-                }`}
+                className={`p-4 border-2 rounded-xl transition-all ${learningGoal === "Personal"
+                  ? "border-green-500 bg-green-50 text-green-700"
+                  : "border-gray-200 hover:border-green-300"
+                  }`}
               >
                 <div className="text-3xl mb-2">🎯</div>
                 <div className="font-semibold">Personal</div>
@@ -235,11 +231,10 @@ const PersonalInfo = () => {
               <button
                 type="button"
                 onClick={() => setDailyGoalMinutes(5)}
-                className={`w-full p-4 border-2 rounded-xl flex items-center justify-between transition-all ${
-                  dailyGoalMinutes === 5
-                    ? "border-green-500 bg-green-50"
-                    : "border-gray-200 hover:border-green-300"
-                }`}
+                className={`w-full p-4 border-2 rounded-xl flex items-center justify-between transition-all ${dailyGoalMinutes === 5
+                  ? "border-green-500 bg-green-50"
+                  : "border-gray-200 hover:border-green-300"
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <div className="text-2xl">☕</div>
@@ -256,11 +251,10 @@ const PersonalInfo = () => {
               <button
                 type="button"
                 onClick={() => setDailyGoalMinutes(15)}
-                className={`w-full p-4 border-2 rounded-xl flex items-center justify-between transition-all ${
-                  dailyGoalMinutes === 15
-                    ? "border-green-500 bg-green-50"
-                    : "border-gray-200 hover:border-green-300"
-                }`}
+                className={`w-full p-4 border-2 rounded-xl flex items-center justify-between transition-all ${dailyGoalMinutes === 15
+                  ? "border-green-500 bg-green-50"
+                  : "border-gray-200 hover:border-green-300"
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <div className="text-2xl">🎯</div>
@@ -277,11 +271,10 @@ const PersonalInfo = () => {
               <button
                 type="button"
                 onClick={() => setDailyGoalMinutes(30)}
-                className={`w-full p-4 border-2 rounded-xl flex items-center justify-between transition-all ${
-                  dailyGoalMinutes === 30
-                    ? "border-green-500 bg-green-50"
-                    : "border-gray-200 hover:border-green-300"
-                }`}
+                className={`w-full p-4 border-2 rounded-xl flex items-center justify-between transition-all ${dailyGoalMinutes === 30
+                  ? "border-green-500 bg-green-50"
+                  : "border-gray-200 hover:border-green-300"
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <div className="text-2xl">🔥</div>
@@ -298,11 +291,10 @@ const PersonalInfo = () => {
               <button
                 type="button"
                 onClick={() => setDailyGoalMinutes(60)}
-                className={`w-full p-4 border-2 rounded-xl flex items-center justify-between transition-all ${
-                  dailyGoalMinutes === 60
-                    ? "border-green-500 bg-green-50"
-                    : "border-gray-200 hover:border-green-300"
-                }`}
+                className={`w-full p-4 border-2 rounded-xl flex items-center justify-between transition-all ${dailyGoalMinutes === 60
+                  ? "border-green-500 bg-green-50"
+                  : "border-gray-200 hover:border-green-300"
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <div className="text-2xl">⚡</div>

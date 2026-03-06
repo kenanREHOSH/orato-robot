@@ -8,11 +8,13 @@ import OurVision from '../components/OurVision';
 import DifferentUs from '../components/DifferentUs';
 import MeetOurTeam from '../components/OurTeam';
 import PoweredByTechnology from '../components/TechnologyUs';
+import LiveChat from '../components/LiveChat';
 import { FaArrowUp } from 'react-icons/fa';
 
 const AboutUs: React.FC = () => {
   const navigate = useNavigate();
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -70,10 +72,10 @@ const AboutUs: React.FC = () => {
                   Join Us
                 </button>
                 <button
-                  onClick={() => navigate('/signup')}
-                  className="px-8 py-3 bg-[#1a9e6b] text-white font-bold rounded-xl hover:bg-[#14c781] transition-all duration-300"
+                  onClick={() => setIsChatOpen(true)}
+                  className="px-8 py-3 bg-[#1a9e6b] text-white font-bold rounded-xl hover:bg-[#14c781] transition-all duration-300 flex items-center gap-2"
                 >
-                  Live Chat
+                  <span>💬</span> Live Chat
                 </button>
               </div>
             </div>
@@ -103,6 +105,9 @@ const AboutUs: React.FC = () => {
           </span>
         </button>
       </main>
+
+      {/* Live Chat Widget */}
+      <LiveChat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
 
       <Footer />
     </div>
