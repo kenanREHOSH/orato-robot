@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-console.log("Cloud name:", process.env.CLOUDINARY_CLOUD_NAME);
+console.log("Cloud name:", process.env.CLOUDINARY_CLOUD_NAME); // profile picture 
 console.log("API key:", process.env.CLOUDINARY_API_KEY);
 
 import express from "express";
