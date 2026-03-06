@@ -23,10 +23,10 @@ interface Question {
 const Assessment = () => {
   const navigate = useNavigate();
   const location = useLocation();
-
+  
   // Get user data from previous steps
   const userData = location.state || {};
-
+  
   // State
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -43,7 +43,7 @@ const Assessment = () => {
     try {
       setLoading(true);
       const res = await axios.get(`${API}/questions`);
-
+      
       if (res.data.success && res.data.questions) {
         setQuestions(res.data.questions);
         console.log("✅ Loaded", res.data.questions.length, "questions");
@@ -80,7 +80,7 @@ const Assessment = () => {
   const handleSubmit = async () => {
     // Check if all questions are answered
     const unansweredCount = questions.length - Object.keys(answers).length;
-
+    
     if (unansweredCount > 0) {
       if (!window.confirm(`You have ${unansweredCount} unanswered questions. Submit anyway?`)) {
         return;
@@ -160,7 +160,7 @@ const Assessment = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 px-4 py-8">
       <div className="max-w-3xl mx-auto">
-
+        
         {/* Progress Bar */}
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
           <div className="flex items-center justify-between mb-2">
@@ -183,7 +183,7 @@ const Assessment = () => {
 
         {/* Question Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
-
+          
           {/* Logo */}
           <div className="flex justify-center mb-6">
             <img src={logo} alt="Orato Logo" className="w-16 h-16 rounded-xl shadow-md" />
@@ -202,12 +202,13 @@ const Assessment = () => {
             <div>
               {/* Category Badge */}
               <div className="flex items-center gap-2 mb-4">
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${currentQuestion.difficulty === 'beginner'
-                  ? 'bg-green-100 text-green-700'
-                  : currentQuestion.difficulty === 'intermediate'
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                  currentQuestion.difficulty === 'beginner'
+                    ? 'bg-green-100 text-green-700'
+                    : currentQuestion.difficulty === 'intermediate'
                     ? 'bg-yellow-100 text-yellow-700'
                     : 'bg-red-100 text-red-700'
-                  }`}>
+                }`}>
                   {currentQuestion.difficulty.charAt(0).toUpperCase() + currentQuestion.difficulty.slice(1)}
                 </span>
                 <span className="text-xs text-gray-500">
@@ -226,16 +227,18 @@ const Assessment = () => {
                   <button
                     key={option.id}
                     onClick={() => handleAnswerSelect(currentQuestion.questionId, option.id)}
-                    className={`w-full p-4 text-left border-2 rounded-xl transition-all ${selectedAnswer === option.id
-                      ? 'border-green-500 bg-green-50 text-green-700'
-                      : 'border-gray-200 hover:border-green-300 hover:bg-green-50'
-                      }`}
+                    className={`w-full p-4 text-left border-2 rounded-xl transition-all ${
+                      selectedAnswer === option.id
+                        ? 'border-green-500 bg-green-50 text-green-700'
+                        : 'border-gray-200 hover:border-green-300 hover:bg-green-50'
+                    }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedAnswer === option.id
-                        ? 'border-green-500 bg-green-500'
-                        : 'border-gray-300'
-                        }`}>
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                        selectedAnswer === option.id
+                          ? 'border-green-500 bg-green-500'
+                          : 'border-gray-300'
+                      }`}>
                         {selectedAnswer === option.id && (
                           <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -254,10 +257,11 @@ const Assessment = () => {
                 <button
                   onClick={handlePrevious}
                   disabled={currentQuestionIndex === 0}
-                  className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${currentQuestionIndex === 0
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'border-2 border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
+                  className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
+                    currentQuestionIndex === 0
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'border-2 border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`}
                 >
                   ← Previous
                 </button>
@@ -285,12 +289,13 @@ const Assessment = () => {
                 {questions.map((_, index) => (
                   <div
                     key={index}
-                    className={`w-2 h-2 rounded-full transition-all ${index === currentQuestionIndex
-                      ? 'bg-green-600 w-8'
-                      : answers[questions[index].questionId]
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      index === currentQuestionIndex
+                        ? 'bg-green-600 w-8'
+                        : answers[questions[index].questionId]
                         ? 'bg-green-400'
                         : 'bg-gray-300'
-                      }`}
+                    }`}
                   />
                 ))}
               </div>
