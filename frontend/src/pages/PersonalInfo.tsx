@@ -170,8 +170,8 @@ const PersonalInfo = () => {
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={() => setLearningGoal("Travel")}
-                className={`p-4 border-2 rounded-xl transition-all ${learningGoal === "Travel"
+                onClick={() => setLearningGoal("travel")}
+                className={`p-4 border-2 rounded-xl transition-all ${learningGoal === "travel"
                   ? "border-green-500 bg-green-50 text-green-700"
                   : "border-gray-200 hover:border-green-300"
                   }`}
@@ -183,11 +183,12 @@ const PersonalInfo = () => {
 
               <button
                 type="button"
-                onClick={() => setLearningGoal("Career")}
-                className={`p-4 border-2 rounded-xl transition-all ${learningGoal === "Career"
-                  ? "border-green-500 bg-green-50 text-green-700"
-                  : "border-gray-200 hover:border-green-300"
-                  }`}
+                onClick={() => setLearningGoal("career")}
+                className={`p-4 border-2 rounded-xl transition-all ${
+                  learningGoal === "career"
+                    ? "border-green-500 bg-green-50 text-green-700"
+                    : "border-gray-200 hover:border-green-300"
+                }`}
               >
                 <div className="text-3xl mb-2">💼</div>
                 <div className="font-semibold">Career</div>
@@ -196,11 +197,12 @@ const PersonalInfo = () => {
 
               <button
                 type="button"
-                onClick={() => setLearningGoal("Education")}
-                className={`p-4 border-2 rounded-xl transition-all ${learningGoal === "Education"
-                  ? "border-green-500 bg-green-50 text-green-700"
-                  : "border-gray-200 hover:border-green-300"
-                  }`}
+                onClick={() => setLearningGoal("education")}
+                className={`p-4 border-2 rounded-xl transition-all ${
+                  learningGoal === "education"
+                    ? "border-green-500 bg-green-50 text-green-700"
+                    : "border-gray-200 hover:border-green-300"
+                }`}
               >
                 <div className="text-3xl mb-2">📚</div>
                 <div className="font-semibold">Education</div>
@@ -209,11 +211,12 @@ const PersonalInfo = () => {
 
               <button
                 type="button"
-                onClick={() => setLearningGoal("Personal")}
-                className={`p-4 border-2 rounded-xl transition-all ${learningGoal === "Personal"
-                  ? "border-green-500 bg-green-50 text-green-700"
-                  : "border-gray-200 hover:border-green-300"
-                  }`}
+                onClick={() => setLearningGoal("personal")}
+                className={`p-4 border-2 rounded-xl transition-all ${
+                  learningGoal === "personal"
+                    ? "border-green-500 bg-green-50 text-green-700"
+                    : "border-gray-200 hover:border-green-300"
+                }`}
               >
                 <div className="text-3xl mb-2">🎯</div>
                 <div className="font-semibold">Personal</div>
