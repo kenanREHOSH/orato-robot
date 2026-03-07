@@ -1,15 +1,15 @@
-console.log("Cloudinary Key:", process.env.CLOUDINARY_API_KEY);
-
-console.log("Cloudinary Key:", process.env.CLOUDINARY_API_KEY);
-
 import dotenv from "dotenv";
 dotenv.config();
 
+console.log("Cloud name:", process.env.CLOUDINARY_CLOUD_NAME); // profile picture 
+console.log("API key:", process.env.CLOUDINARY_API_KEY);
+
 import express from "express";
 import cors from "cors";
-import passport from 'passport';  //  NEW
-import session from 'express-session';  //  NEW
-import { configurePassport } from './config/passport.js';  //  NEW
+import passport from "passport";
+import session from "express-session";
+
+import { configurePassport } from "./config/passport.js";
 
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth-routes.js";
@@ -21,6 +21,8 @@ import progressRoutes from "./routes/progress-routes.js";
 import chatRoutes from "./routes/chat-routes.js";
 import { verifyEmailConfig } from "./services/emailService.js";
 import protect from "./middleware/authMiddleware.js";
+
+console.log("Cloudinary Key:", process.env.CLOUDINARY_API_KEY);
 
 // Initialize app
 const app = express();
