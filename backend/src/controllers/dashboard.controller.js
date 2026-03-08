@@ -6,12 +6,13 @@ import Achievement from '../models/achievement.js';
 
 /**
  * Get full dashboard data
- * GET /api/dashboard
+ * Combines lessons, challenges, skills, achievements and stats
  */
 export const getDashboard = async (req, res) => {
   try {
     const userId = req.user._id;
 
+    // Fetch dashboard related data in parallel
     const [lessons, challenges, skills, achievements] = await Promise.all([
       Lesson.find({ userId }).sort({ order: 1 }).limit(5),
       Challenge.find({ userId, expiresAt: { $gt: new Date() } }),
@@ -19,6 +20,7 @@ export const getDashboard = async (req, res) => {
       Achievement.find({ userId }).sort({ earnedAt: -1 }).limit(3)
     ]);
 
+    // Default stats if user has no stats saved
     const stats = req.user.stats || {
       dayStreak: 0, streakChange: 0, totalPoints: 0,
       rankPercentile: 0, badgesEarned: 0, badgesToNextLevel: 5,
@@ -29,18 +31,26 @@ export const getDashboard = async (req, res) => {
       status: 'success',
       data: {
         stats,
+
+        // Continue learning section
         continueLearning: lessons.map(l => ({
           id: l._id, title: l.title, category: l.category,
           timeLeft: l.timeLeft, progress: l.progress,
           icon: l.icon, iconBg: l.iconBg
         })),
+
+        // Daily challenge list
         dailyChallenges: challenges.map(c => ({
           id: c._id, title: c.title, current: c.current,
           target: c.target, points: c.points, completed: c.completed
         })),
+
+        // Skill progress bars
         skillProgress: skills.map(s => ({
           name: s.name, percentage: s.percentage, color: s.color
         })),
+
+        // Latest achievements
         recentAchievements: achievements.map(a => ({
           id: a._id, title: a.title, description: a.description,
           icon: a.icon, iconColor: a.iconColor, iconBg: a.iconBg,
@@ -55,8 +65,7 @@ export const getDashboard = async (req, res) => {
 };
 
 /**
- * Get dashboard stats only
- * GET /api/dashboard/stats
+ * Return only dashboard statistics
  */
 export const getStats = async (req, res) => {
   try {
@@ -77,12 +86,14 @@ export const getStats = async (req, res) => {
 };
 
 /**
- * Get continue learning section
- * GET /api/dashboard/continue-learning
+ * Continue learning lessons
+ * Shows lessons the user was working on
  */
 export const getContinueLearning = async (req, res) => {
   try {
     const userId = req.user._id;
+
+    // Get lessons sorted by order
     const lessons = await Lesson.find({ userId }).sort({ order: 1 });
 
     res.status(200).json({
@@ -103,12 +114,13 @@ export const getContinueLearning = async (req, res) => {
 };
 
 /**
- * Get daily challenges
- * GET /api/dashboard/challenges
+ * Daily challenges available for the user
  */
 export const getChallenges = async (req, res) => {
   try {
     const userId = req.user._id;
+
+    // Only return active challenges
     const challenges = await Challenge.find({
       userId,
       expiresAt: { $gt: new Date() }
@@ -131,12 +143,13 @@ export const getChallenges = async (req, res) => {
 };
 
 /**
- * Get skill progress
- * GET /api/dashboard/skills
+ * Skill progress data
  */
 export const getSkills = async (req, res) => {
   try {
     const userId = req.user._id;
+
+    // Retrieve all skills for user
     const skills = await Skill.find({ userId });
 
     res.status(200).json({
@@ -156,12 +169,13 @@ export const getSkills = async (req, res) => {
 };
 
 /**
- * Get recent achievements
- * GET /api/dashboard/achievements
+ * Recently earned achievements
  */
 export const getRecentAchievements = async (req, res) => {
   try {
     const userId = req.user._id;
+
+    // Get latest achievements
     const achievements = await Achievement.find({ userId })
       .sort({ earnedAt: -1 })
       .limit(5);
@@ -183,8 +197,8 @@ export const getRecentAchievements = async (req, res) => {
 };
 
 /**
- * Get activity history
- * GET /api/dashboard/activity
+ * Placeholder for activity history
+ * Can be extended later
  */
 export const getActivityHistory = async (req, res) => {
   try {
