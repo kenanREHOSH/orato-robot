@@ -11,9 +11,10 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn: propIsLoggedIn }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
   const [userAvatar, setUserAvatar] = useState("");
+  const [userInitials, setUserInitials] = useState("U");
 
-  // Check login status from localStorage
-  useEffect(() => {
+  // Sync state from localStorage
+  const syncFromStorage = () => {
     const token = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
 
@@ -21,15 +22,24 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn: propIsLoggedIn }) => {
 
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
-
       const fullName = parsedUser.fullName || "";
-
-      const firstName =
-        fullName.split(".").pop()?.trim().split(" ")[0] || "User";
+      const firstName = fullName.split(".").pop()?.trim().split(" ")[0] || "User";
+      const initials = fullName
+        ? fullName.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
+        : "U";
 
       setUserName(firstName);
-      setUserAvatar(parsedUser.profilePicture || "");
+      setUserAvatar((parsedUser.profilePicture && parsedUser.profilePicture.trim() !== "") ? parsedUser.profilePicture : "");
+      setUserInitials(initials);
     }
+  };
+
+  useEffect(() => {
+    syncFromStorage();
+
+    // Re-sync when another tab/page mutates localStorage
+    window.addEventListener("storage", syncFromStorage);
+    return () => window.removeEventListener("storage", syncFromStorage);
   }, [propIsLoggedIn]);
 
   const toggleMobileMenu = () => {
@@ -125,11 +135,17 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn: propIsLoggedIn }) => {
                   }
                   onClick={closeMobileMenu}
                 >
-                  <img
-                    src={userAvatar || "/default-avatar.png"}
-                    alt="profile"
-                    className="w-9 h-9 rounded-full object-cover border-2 border-green-500"
-                  />
+                  {userAvatar ? (
+                    <img
+                      src={userAvatar}
+                      alt="profile"
+                      className="w-9 h-9 rounded-full object-cover border-2 border-green-500"
+                    />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full bg-green-500 flex items-center justify-center text-white text-sm font-semibold border-2 border-green-500 shrink-0">
+                      {userInitials}
+                    </div>
+                  )}
 
                   <span className="font-semibold hidden md:inline">
                     {userName}
