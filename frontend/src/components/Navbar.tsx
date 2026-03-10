@@ -14,8 +14,8 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn: propIsLoggedIn }) => {
 
   // Check login status from localStorage
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
+    const token = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
 
     setIsLoggedIn(!!token || propIsLoggedIn || false);
 
@@ -42,13 +42,13 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn: propIsLoggedIn }) => {
 
   // Active link styling
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `font-medium transition-all py-2 px-4 block no-underline rounded-lg
-     hover:bg-green-100 hover:scale-105 hover:shadow-md
-     ${isActive ? 'text-green-600 font-semibold bg-green-50' : 'text-gray-700'}`;
+    `font-medium transition-all duration-200 py-2 px-4 block no-underline rounded-lg
+   hover:bg-green-100 hover:scale-105 hover:shadow-md
+   ${isActive ? 'text-green-600 font-semibold bg-green-50' : 'text-gray-700'}`;
 
   return (
     <nav className="sticky top-4 z-50 w-full px-4 sm:px-6 lg:px-8">
-      <div className="bg-white/80 backdrop-blur-md border border-green-100 shadow-lg rounded-2xl transition-all max-w-7xl mx-auto">
+      <div className="bg-white/60 backdrop-blur-md border border-green-100 shadow-lg rounded-2xl transition-all max-w-7xl mx-auto">
         <div className="px-8 py-4">
           <div className="flex justify-between items-center">
 
@@ -119,20 +119,18 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn: propIsLoggedIn }) => {
                 <NavLink
                   to="/account"
                   className={({ isActive }) =>
-                    `flex items-center gap-3 py-2 px-4 rounded-full transition-all duration-300 no-underline
-       hover:bg-green-100 hover:scale-105 hover:shadow-md
-       ${isActive ? "text-green-600 font-semibold bg-green-50" : "text-gray-700"}`
+                    `flex items-center gap-2 py-2 px-4 rounded-lg transition-all duration-200 no-underline
+                     hover:bg-green-100 hover:scale-105 hover:shadow-md
+                     ${isActive ? "text-green-600 font-semibold bg-green-50" : "text-gray-700"}`
                   }
                   onClick={closeMobileMenu}
                 >
-                  {/* Profile Image */}
                   <img
                     src={userAvatar || "/default-avatar.png"}
                     alt="profile"
-                    className="w-10 h-10 rounded-full object-cover border-2 border-green-500 transition-transform duration-300 hover:scale-110"
+                    className="w-9 h-9 rounded-full object-cover border-2 border-green-500"
                   />
 
-                  {/* User Name */}
                   <span className="font-semibold hidden md:inline">
                     {userName}
                   </span>
