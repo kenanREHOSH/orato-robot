@@ -21,7 +21,13 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn: propIsLoggedIn }) => {
 
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
-      setUserName(parsedUser.name || "User");
+
+      const fullName = parsedUser.fullName || "";
+
+      const firstName =
+        fullName.split(".").pop()?.trim().split(" ")[0] || "User";
+
+      setUserName(firstName);
       setUserAvatar(parsedUser.profilePicture || "");
     }
   }, [propIsLoggedIn]);
