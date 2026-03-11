@@ -40,7 +40,7 @@ export const chatWithSpeakingCoach = async (req, res) => {
       coachReply: response.choices[0].message.content,
     });
   } catch (error) {
-    console.error("Speaking coach AI error:", error);
+    console.error(`[${new Date().toISOString()}] Speaking coach AI error:`, error);
     return res.status(500).json({
       success: false,
       message: "Failed to get AI coach reply.",
