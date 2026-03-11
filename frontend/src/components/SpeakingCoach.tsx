@@ -149,7 +149,9 @@ function SpeakingCoach() {
   const stopListening = () => {
     try {
       recognition?.stop();
-    } catch { }
+    } catch (err) {
+      console.warn("Speech recognition stop error:", err);
+    }
     setListening(false);
   };
 
@@ -192,7 +194,7 @@ function SpeakingCoach() {
         <button
           onClick={startListening}
           disabled={!supported || listening || loading}
-          className={`px-4 py-2 rounded-xl border font-semibold ${listening || loading
+          className={`px-4 py-2 rounded-xl border font-semibold transition-colors duration-200 ${listening || loading
             ? "bg-gray-100 cursor-not-allowed"
             : "bg-green-50 hover:bg-green-100"
             }`}
@@ -203,7 +205,7 @@ function SpeakingCoach() {
         <button
           onClick={stopListening}
           disabled={!supported || !listening}
-          className={`px-4 py-2 rounded-xl border font-semibold ${!listening
+          className={`px-4 py-2 rounded-xl border font-semibold transition-colors duration-200 ${!listening
             ? "bg-gray-100 cursor-not-allowed"
             : "bg-red-50 hover:bg-red-100"
             }`}
@@ -216,7 +218,7 @@ function SpeakingCoach() {
             setMessages((prev) => prev.slice(0, 2));
             setInterim("");
           }}
-          className="px-4 py-2 rounded-xl border font-semibold bg-indigo-50 hover:bg-indigo-100"
+          className="px-4 py-2 rounded-xl border font-semibold bg-indigo-50 hover:bg-indigo-100 transition-colors duration-200"
         >
           🧹 Clear Chat
         </button>
@@ -267,7 +269,7 @@ function SpeakingCoach() {
         <button
           onClick={sendText}
           disabled={loading}
-          className={`px-4 py-2 rounded-xl border font-bold ${loading
+          className={`px-4 py-2 rounded-xl border font-bold transition-colors duration-200 ${loading
             ? "bg-gray-100 cursor-not-allowed"
             : "bg-green-50 hover:bg-green-100"
             }`}
