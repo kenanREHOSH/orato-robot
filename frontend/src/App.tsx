@@ -17,6 +17,8 @@ import ResetPassword from "./pages/ResetPassword";
 import GoogleCallback from "./pages/GoogleCallback";
 import Quiz from "./pages/Quiz";
 import QuizDetail from "./pages/QuizDetail";
+import ListeningQuiz from "./pages/ListeningQuiz";
+import ListeningDetail from "./pages/ListeningDetail";
 import VisualCardsPage from "./pages/VisualCardsPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -52,6 +54,24 @@ function App() {
           {/* Quiz Routes */}
           <Route path="/quiz" element={<Quiz />} />
           <Route path="/quiz/:id" element={<QuizDetail />} />
+
+          {/* Listening Routes */}
+          <Route 
+            path="/listening" 
+            element={
+              <ProtectedRoute>
+                <ListeningQuiz />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/listening/:id" 
+            element={
+              <ProtectedRoute>
+                <ListeningDetail />
+              </ProtectedRoute>
+            } 
+          />
 
           {/* Visual Cards */}
           <Route path="/visual-cards" element={<VisualCardsPage />} />

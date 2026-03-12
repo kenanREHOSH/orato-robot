@@ -35,7 +35,7 @@ const AccountActions: React.FC<AccountActionsProps> = ({ userId }) => {
         }
 
         try {
-            await axios.delete(`http://localhost:5001/api/settings/${userId}`);
+            await axios.delete(`http://localhost:5002/api/settings/${userId}`);
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             setShowDeleteConfirm(false);

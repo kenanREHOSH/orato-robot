@@ -9,7 +9,7 @@ import PrivacyData from '../components/PrivacyData'; // For importing Privacy & 
 import AccountActions from '../components/AccountActions'; // For importing Account Actions component.
 import backgroundImage from '../assets/settingbg.jpg';
 
-const API = 'http://localhost:5001/api/settings';
+const API = 'http://localhost:5002/api/settings';
 
 const Settings: React.FC = () => {
     const [userId, setUserId] = useState<string | null>(null);

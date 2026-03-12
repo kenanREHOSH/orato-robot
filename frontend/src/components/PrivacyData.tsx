@@ -18,7 +18,7 @@ const PrivacyData: React.FC<{ userId?: string }> = ({ userId }) => {
             alert('Please log in to download your data.');
             return;
         }
-        window.open(`http://localhost:5001/api/settings/${userId}/download`, '_blank');
+        window.open(`http://localhost:5002/api/settings/${userId}/download`, '_blank');
     };
 
     /**

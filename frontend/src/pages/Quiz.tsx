@@ -130,6 +130,13 @@ const Quiz: React.FC = () => {
   const filteredQuizzes =
     filter === "All" ? quizzes : quizzes.filter((q) => q.category === filter);
 
+  // Redirect to dedicated Listening page when Listening filter is selected
+  useEffect(() => {
+    if (filter === "Listening") {
+      navigate("/listening");
+    }
+  }, [filter, navigate]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8FAFC]">
