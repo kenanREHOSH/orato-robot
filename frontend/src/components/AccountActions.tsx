@@ -4,7 +4,6 @@ import type { AccountActionsProps } from '../types/settings.types';
 import axios from 'axios';
 import { gsap } from 'gsap';
 
-// For handles the logout and account delete
 const AccountActions: React.FC<AccountActionsProps> = ({ userId }) => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState<boolean>(false);
@@ -61,7 +60,7 @@ const AccountActions: React.FC<AccountActionsProps> = ({ userId }) => {
         }
 
         try {
-            await axios.delete(`http://localhost:5002/api/settings/${userId}`);
+            await axios.delete(`${window.config.backendUrl}/settings/${userId}`);
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             setShowDeleteConfirm(false);

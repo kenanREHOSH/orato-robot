@@ -108,7 +108,7 @@ const ListeningDetail: React.FC = () => {
       try {
         const user = JSON.parse(stored);
         const userId = user.id || user._id;
-        axios.get(`http://localhost:5002/api/settings/${userId}`)
+        axios.get(`${window.config.backendUrl}/settings/${userId}`)
           .then(res => {
             if (res.data.settings?.audioDisplay) {
               setAudioSettings(res.data.settings.audioDisplay);

@@ -21,7 +21,7 @@ import PrivacyData from '../components/PrivacyData';
 import AccountActions from '../components/AccountActions';
 import LearningPreferences from '../components/LearningPreferences';
 
-const API = 'http://localhost:5002/api/settings';
+const API = `${window.config.backendUrl}/settings`;
 
 type Category = 'language' | 'learning' | 'notifications' | 'audio' | 'privacy' | 'account';
 

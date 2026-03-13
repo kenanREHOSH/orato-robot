@@ -6,7 +6,7 @@ interface PrivacyDataProps {
     userId?: string;
 }
 
-const PrivacyData: React.FC<PrivacyDataProps> = ({ userId }) => {
+const PrivacyData: React.FC<PrivacyDataProps> = () => {
     const [showPrivacyModal, setShowPrivacyModal] = useState(false);
     const [showTermsModal, setShowTermsModal] = useState(false);
     const cardRef = useRef<HTMLDivElement>(null);
