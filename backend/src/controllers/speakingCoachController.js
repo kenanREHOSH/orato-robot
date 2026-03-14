@@ -1,9 +1,5 @@
 import OpenAI from "openai";
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 const COACH_SYSTEM_PROMPT =
   "You are a friendly English speaking coach. Correct grammar briefly, explain simply, and ask one short follow-up question. Keep replies short and clear for learners.";
 
@@ -18,6 +14,16 @@ export const chatWithSpeakingCoach = async (req, res) => {
         message: "Message is required.",
       });
     }
+
+    // Check API key at request time so the server can still start without it
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        message: "OpenAI API key is not configured on the server.",
+      });
+    }
+
+    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     const conversationContext = [
       {
