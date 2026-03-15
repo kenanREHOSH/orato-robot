@@ -128,6 +128,7 @@ const userSchema = new mongoose.Schema({
     badgesToNextLevel: { type: Number, default: 5 },
     lessonsDone: { type: Number, default: 0 },
     lessonsThisWeek: { type: Number, default: 0 },
+    lessonsLastWeek: { type: Number, default: 0 },
     lastStreakUpdate: { type: Date, default: Date.now }
   },
 });
@@ -135,7 +136,7 @@ const userSchema = new mongoose.Schema({
 
 
 //  FIXED: Update timestamp before saving (no next() needed)
-userSchema.pre('save', function() {
+userSchema.pre('save', function () {
   this.updatedAt = Date.now();
 });
 

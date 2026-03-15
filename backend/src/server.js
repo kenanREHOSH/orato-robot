@@ -26,28 +26,23 @@ import dashboardRoutes from "./routes/dashboard-routes.js";
 import quizRoutes from "./routes/quiz-routes.js"
 import listeningRoutes from "./routes/listening-routes.js"
 import readingRoutes from "./routes/reading-routes.js"
+import grammarRoutes from "./routes/grammar-routes.js"
 
 console.log("Cloudinary Key:", process.env.CLOUDINARY_API_KEY);
 
 // Initialize app
 const app = express();
 
-// ===== MIDDLEWARE =====
+// MIDDLEWARE 
 
 // CORS
-app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:5174"],
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
-app.options("*", cors());
+app.use(cors());
 
 // Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ===== NEW: SESSION MIDDLEWARE (Required by Passport) =====
+// NEW: SESSION MIDDLEWARE (Required by Passport)
 app.use(
   session({
     secret: process.env.JWT_SECRET || 'orato-session-secret',
@@ -60,11 +55,11 @@ app.use(
   })
 );
 
-// ===== NEW: INITIALIZE PASSPORT =====
+// NEW: INITIALIZE PASSPORT
 app.use(passport.initialize());
 app.use(passport.session());
 
-// ===== NEW: CONFIGURE PASSPORT STRATEGIES =====
+// NEW: CONFIGURE PASSPORT STRATEGIES
 configurePassport();
 
 // Connect DB
@@ -73,7 +68,11 @@ connectDB();
 // Verify Email Config
 verifyEmailConfig();
 
-// ===== ROUTES =====
+// Initialize Cron Jobs
+import { initCronJobs } from "./services/cronJobs.js";
+initCronJobs();
+
+// ROUTES
 app.use("/api/auth", authRoutes);
 app.use("/api/otp", otpRoutes);
 app.use("/api/users", userRoutes);
@@ -86,6 +85,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/quiz", quizRoutes);
 app.use("/api/listening", listeningRoutes);
 app.use("/api/reading", readingRoutes);
+app.use("/api/grammar", grammarRoutes);
 
 // Protected route test
 app.get("/api/protected", protect, (req, res) => {
