@@ -28,6 +28,7 @@ import listeningRoutes from "./routes/listening-routes.js"
 import readingRoutes from "./routes/reading-routes.js"
 import grammarRoutes from "./routes/grammar-routes.js"
 import speakingCoachRoutes from "./routes/speakingCoachRoutes.js"
+import { initCronJobs } from "./services/cronJobs.js";
 
 console.log("Cloudinary Key:", process.env.CLOUDINARY_API_KEY);
 
@@ -70,7 +71,6 @@ connectDB();
 verifyEmailConfig();
 
 // Initialize Cron Jobs
-import { initCronJobs } from "./services/cronJobs.js";
 initCronJobs();
 
 // ROUTES

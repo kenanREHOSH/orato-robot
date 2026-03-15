@@ -5,7 +5,7 @@
   "scripts": {
     "prestart": "kill-port 5002 || true",
     "start": "node -r dotenv/config src/server.js",
-    "dev": "kill-port 5002 || nodemon src/server.js",
+    "dev": "nodemon src/server.js",
     "seed": "node -r dotenv/config src/utils/seedQuestions.js"
   },
   "keywords": [],
