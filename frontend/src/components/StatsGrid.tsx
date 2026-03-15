@@ -20,7 +20,7 @@ const getStats = (data: typeof statsData): StatCard[] => [
     iconColor: "text-orato-orange",
     value: data.dayStreak,
     label: "Day Streak",
-    subtext: "+2 from last week",
+    subtext: "",
     subtextColor: "text-orato-green",
   },
   {
@@ -30,7 +30,7 @@ const getStats = (data: typeof statsData): StatCard[] => [
     value: data.totalPoints,
     suffix: "",
     label: "Total Points",
-    subtext: "Top 10% this month",
+    subtext: "",
     subtextColor: "text-orato-green",
   },
   {
@@ -39,7 +39,7 @@ const getStats = (data: typeof statsData): StatCard[] => [
     iconColor: "text-orato-purple",
     value: data.badgesEarned,
     label: "Badges Earned",
-    subtext: "3 more to next level",
+    subtext: "",
     subtextColor: "text-gray-500",
   },
   {
@@ -48,7 +48,7 @@ const getStats = (data: typeof statsData): StatCard[] => [
     iconColor: "text-orato-green",
     value: data.lessonsDone,
     label: "Lessons Done",
-    subtext: "+5 this week",
+    subtext: "",
     subtextColor: "text-orato-green",
   },
 ];
@@ -257,9 +257,11 @@ export default function StatsGrid() {
             <div className="mt-4 pl-1">
               <AnimatedNumber value={stat.value} suffix={stat.suffix} />
               <p className="text-sm text-gray-600 mt-1">{stat.label}</p>
-              <p className={`text-xs ${stat.subtextColor} mt-1 font-medium`}>
-                {stat.subtext}
-              </p>
+              {stat.subtext && (
+                <p className={`text-xs ${stat.subtextColor} mt-1 font-medium`}>
+                  {stat.subtext}
+                </p>
+              )}
             </div>
           </div>
         );

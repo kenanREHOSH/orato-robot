@@ -10,6 +10,8 @@ interface Skill {
   details?: {
     totalLevels?: number;
     completedLevels?: number;
+    totalReading?: number;
+    completedReading?: number;
     points?: number;
   };
 }
@@ -25,6 +27,7 @@ const defaultSkills: Skill[] = [
   { name: "Vocabulary", percentage: 0, color: "#3B82F6" },
   { name: "Grammar", percentage: 0, color: "#8B5CF6" },
   { name: "Listening", percentage: 0, color: "#F97316" },
+  { name: "Reading", percentage: 0, color: "#10B981" },
 ];
 
 function AnimatedPercentage({ value }: { value: number }) {
@@ -80,10 +83,12 @@ export default function SkillProgress() {
         ]);
 
         let grammarPercentage = 0;
+        let grammarCompletedLevels = 0;
         if (grammarRes.ok) {
           const grammarData = await grammarRes.json();
           const completedLevels = grammarData.data?.completedLevels || [];
           grammarPercentage = Math.round((completedLevels.length / 10) * 100);
+          grammarCompletedLevels = completedLevels.length;
         }
 
         if (dashboardRes.data?.skills?.length > 0) {
@@ -97,13 +102,20 @@ export default function SkillProgress() {
           );
 
           const mergedSkills = defaultSkills.map((defaultSkill) => {
-            if (defaultSkill.name === "Grammar") {
-              return { ...defaultSkill, percentage: grammarPercentage };
-            }
             const found = fetchedSkills.find(
               (s: FetchedSkill) => s.name === defaultSkill.name,
             );
-            return found || defaultSkill;
+            if (defaultSkill.name === "Grammar" && found) {
+              return { 
+                ...defaultSkill, 
+                percentage: grammarPercentage,
+                details: {
+                  ...found.details,
+                  completedLevels: grammarCompletedLevels
+                }
+              };
+            }
+            return found ? { ...defaultSkill, ...found } : defaultSkill;
           });
 
           setSkills(mergedSkills);
@@ -177,7 +189,14 @@ export default function SkillProgress() {
                   {skill.name}
                 </span>
                 <span className="text-sm font-semibold text-gray-900">
-                  <AnimatedPercentage value={skill.percentage} />
+                  {skill.name === 'Reading' 
+                    ? `Level ${skill.details?.completedReading || 0}`
+                    : skill.name === 'Grammar'
+                    ? `Level ${skill.details?.completedLevels || 0}`
+                    : skill.name === 'Listening' || skill.name === 'Vocabulary'
+                    ? `Level 0`
+                    : <AnimatedPercentage value={skill.percentage} />
+                  }
                 </span>
               </div>
 

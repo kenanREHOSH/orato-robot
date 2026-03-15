@@ -16,6 +16,7 @@ import {
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { listeningService } from "../services/listeningService";
+import { dashboardService } from "../services/dashboardService";
 import axios from "axios";
 
 interface Question {
@@ -236,6 +237,12 @@ const ListeningDetail: React.FC = () => {
     try {
       const res = await listeningService.submit(id!, finalAnswers);
       setResult(res.data.result);
+      
+      try {
+        await dashboardService.updateChallenge('listening');
+      } catch (e) {
+        console.error('Failed to update challenge:', e);
+      }
     } catch (err) {
       console.error("Submit failed:", err);
       setResult({
