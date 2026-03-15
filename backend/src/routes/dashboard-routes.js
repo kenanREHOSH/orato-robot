@@ -5,6 +5,7 @@ import {
   getStats,
   getContinueLearning,
   getChallenges,
+  updateChallengeProgress,
   getSkills,
   getRecentAchievements,
   getActivityHistory
@@ -19,6 +20,7 @@ router.get('/', getDashboard);
 router.get('/stats', getStats);
 router.get('/continue-learning', getContinueLearning);
 router.get('/challenges', getChallenges);
+router.post('/challenges/update', updateChallengeProgress);
 router.get('/skills', getSkills);
 router.get('/achievements', getRecentAchievements);
 router.get('/activity', getActivityHistory);

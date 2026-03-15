@@ -12,6 +12,7 @@ import {
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { grammarService } from "../services/grammarService";
+import { dashboardService } from "../services/dashboardService";
 
 interface Question {
   id: number;
@@ -139,6 +140,12 @@ const GrammarQuiz: React.FC = () => {
     try {
       const res = await grammarService.submitAnswers(Number(level), finalAnswers);
       setResult(res.data.result);
+      
+      try {
+        await dashboardService.updateChallenge('lessons');
+      } catch (e) {
+        console.error('Failed to update challenge:', e);
+      }
     } catch (err) {
       console.error("Submit failed:", err);
       setError("Failed to submit answers. Please try again.");

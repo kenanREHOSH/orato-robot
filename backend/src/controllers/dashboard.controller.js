@@ -178,10 +178,54 @@ export const getContinueLearning = async (req, res) => {
 export const getChallenges = async (req, res) => {
   try {
     const userId = req.user._id;
-    const challenges = await Challenge.find({
+    const skillLevel = req.user.skillLevel || 'beginner';
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    let challenges = await Challenge.find({
       userId,
-      expiresAt: { $gt: new Date() }
+      date: today
     });
+
+    // Filter out any old/unsupported challenge types
+    const validTypes = ['lessons', 'reading', 'listening'];
+    const invalidChallenges = challenges.filter(c => !validTypes.includes(c.type));
+    if (invalidChallenges.length > 0) {
+      await Challenge.deleteMany({
+        _id: { $in: invalidChallenges.map(c => c._id) }
+      });
+      challenges = challenges.filter(c => validTypes.includes(c.type));
+    }
+
+    if (challenges.length === 0) {
+      const challengeTemplates = [
+        { title: 'Complete 2 Grammar Quizzes', type: 'lessons', target: 2, points: 20 },
+        { title: 'Complete 1 Reading Task', type: 'reading', target: 1, points: 15 },
+        { title: 'Complete 1 Listening Task', type: 'listening', target: 1, points: 15 },
+      ];
+
+      const newChallenges = challengeTemplates.map(template => ({
+        userId,
+        title: template.title,
+        type: template.type,
+        target: template.target,
+        points: template.points,
+        current: 0,
+        completed: false,
+        expiresAt: tomorrow,
+        date: today
+      }));
+
+      await Challenge.insertMany(newChallenges);
+      
+      challenges = await Challenge.find({
+        userId,
+        date: today
+      });
+    }
 
     res.status(200).json({
       status: 'success',
@@ -196,6 +240,42 @@ export const getChallenges = async (req, res) => {
   } catch (error) {
     console.error('Get challenges error:', error);
     res.status(500).json({ status: 'error', message: 'Failed to get challenges' });
+  }
+};
+
+/**
+ * Update challenge progress
+ * POST /api/dashboard/challenges/update
+ */
+export const updateChallengeProgress = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { type, amount = 1 } = req.body;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const challenge = await Challenge.findOne({
+      userId,
+      type,
+      date: today
+    });
+
+    if (challenge && !challenge.completed) {
+      challenge.current += amount;
+      if (challenge.current >= challenge.target) {
+        challenge.completed = true;
+      }
+      await challenge.save();
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: { challenge }
+    });
+  } catch (error) {
+    console.error('Update challenge error:', error);
+    res.status(500).json({ status: 'error', message: 'Failed to update challenge' });
   }
 };
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, BookOpen, Loader2, PenTool, Headphones, BookMarked } from "lucide-react";
+import { ArrowLeft, BookOpen, PenTool, Headphones, BookMarked } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
