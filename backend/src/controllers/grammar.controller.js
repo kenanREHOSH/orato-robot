@@ -1,6 +1,7 @@
 import GrammarQuestion from '../models/grammarQuestion.js';
 import GrammarProgress from '../models/grammarProgress.js';
 import User from '../models/user.js';
+import { checkAndUpgradeLevel } from '../services/progressService.js';
 
 export const getLevels = async (req, res) => {
   try {
@@ -222,6 +223,11 @@ export const submitAnswers = async (req, res) => {
       console.error('Failed to update user stats:', err);
     }
 
+    // Check for level upgrade
+    const upgradeResult = await checkAndUpgradeLevel(userId);
+    let levelUpgraded = upgradeResult.upgraded;
+    let newLevel = upgradeResult.newLevel;
+
     res.status(200).json({
       status: 'success',
       data: {
@@ -236,7 +242,9 @@ export const submitAnswers = async (req, res) => {
           currentLevel: updatedProgress.currentLevel,
           totalScore: updatedProgress.totalScore,
           isCompleted: updatedProgress.isCompleted,
-          badgeEarned
+          badgeEarned,
+          levelUpgraded,
+          newLevel
         }
       }
     });
