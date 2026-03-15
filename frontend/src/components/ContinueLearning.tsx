@@ -15,20 +15,14 @@ interface Lesson {
   icon: string;
   iconBg: string;
   isGrammar?: boolean;
+  isReading?: boolean;
+  isListening?: boolean;
   completedLevels?: number;
   totalLevels?: number;
   points?: number;
 }
 
 const defaultLessons: Lesson[] = [
-  {
-    id: 3,
-    title: "English Vocabulary: Daily Life",
-    timeLeft: "5 min left",
-    progress: 0,
-    icon: "📖",
-    iconBg: "bg-blue-100",
-  },
   {
     id: 4,
     title: "Visual Vocabulary Cards",
@@ -84,15 +78,14 @@ export default function ContinueLearning({
       try {
         const res = await dashboardService.getContinueLearning();
         if (res.data?.lessons) {
-          const filteredLessons = res.data.lessons.filter(
-            (lesson: Lesson) =>
-              !lesson.isGrammar &&
-              !lesson.title?.toLowerCase().includes("grammar"),
-          );
-          setLessons(filteredLessons);
+          // Only use default lessons, ignore backend Grammar/Reading/Listening
+          setLessons(defaultLessons);
+        } else {
+          setLessons(defaultLessons);
         }
       } catch (error) {
         console.error("Failed to fetch lessons:", error);
+        setLessons(defaultLessons);
       } finally {
         setLoading(false);
       }
@@ -216,7 +209,9 @@ export default function ContinueLearning({
                       </div>
                     </div>
                     <p className="text-xs text-gray-500 mt-1.5">
-                      {lesson.progress}% complete
+                      {lesson.isGrammar || lesson.isReading || lesson.isListening
+                        ? `Level ${lesson.completedLevels || 0} completed`
+                        : `${lesson.progress}% complete`}
                     </p>
                   </div>
                 </div>

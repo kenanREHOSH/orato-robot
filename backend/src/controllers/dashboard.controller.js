@@ -4,6 +4,7 @@ import Challenge from '../models/challenge.js';
 import Skill from '../models/skill.js';
 import Achievement from '../models/achievement.js';
 import GrammarProgress from '../models/grammarProgress.js';
+import ReadingProgress from '../models/readingProgress.js';
 
 /**
  * Get full dashboard data
@@ -62,6 +63,8 @@ export const getDashboard = async (req, res) => {
 export const getStats = async (req, res) => {
   try {
     const user = req.user;
+    const userId = user._id;
+    const skillLevel = user.skillLevel || 'beginner';
     
     const stats = user.stats || {
       dayStreak: 0,
@@ -75,12 +78,40 @@ export const getStats = async (req, res) => {
       lastStreakUpdate: new Date()
     };
 
+    let grammarAttempts = 0;
+    let readingAttempts = 0;
+    let listeningAttempts = 0;
+
+    try {
+      const grammarProgress = await GrammarProgress.findOne({ userId, skillLevel });
+      grammarAttempts = grammarProgress?.completedLevels?.length || 0;
+    } catch (e) {
+      console.error('Error fetching grammar progress:', e);
+    }
+
+    try {
+      const readingProgress = await ReadingProgress.find({ userId, level: skillLevel });
+      readingAttempts = readingProgress.filter(r => r.completed).length;
+    } catch (e) {
+      console.error('Error fetching reading progress:', e);
+    }
+
+    try {
+      const ListeningProgress = (await import('../models/listeningProgress.js')).default;
+      const listeningProgress = await ListeningProgress.find({ userId, level: skillLevel });
+      listeningAttempts = listeningProgress.filter(l => l.completed).length;
+    } catch (e) {
+      console.error('Error fetching listening progress:', e);
+    }
+
+    const totalLessonsDone = grammarAttempts + readingAttempts + listeningAttempts;
+
     res.status(200).json({
       status: 'success',
       data: { 
         stats: {
           ...stats,
-          lessonsDone: stats.lessonsDone || 0
+          lessonsDone: totalLessonsDone
         }
       }
     });
@@ -97,41 +128,18 @@ export const getStats = async (req, res) => {
 export const getContinueLearning = async (req, res) => {
   try {
     const userId = req.user._id;
-    const skillLevel = req.user.skillLevel || 'beginner';
     
     const lessons = await Lesson.find({ userId }).sort({ order: 1 });
-    
-    const grammarProgress = await GrammarProgress.findOne({ userId, skillLevel });
-    const completedGrammarLevels = grammarProgress?.completedLevels?.length || 0;
-    const totalGrammarLevels = 10;
-    const grammarProgressPercent = Math.round((completedGrammarLevels / totalGrammarLevels) * 100);
-    const nextGrammarLevel = grammarProgress?.currentLevel || 1;
-    
-    const grammarLesson = {
-      id: 'grammar',
-      title: `Grammar Practice - Level ${nextGrammarLevel}`,
-      category: 'Grammar',
-      timeLeft: '10 min left',
-      totalTime: 10,
-      progress: grammarProgressPercent,
-      icon: '📝',
-      iconBg: 'bg-purple-100',
-      lastAccessed: grammarProgress?.updatedAt || new Date(),
-      isGrammar: true,
-      completedLevels: completedGrammarLevels,
-      totalLevels: totalGrammarLevels,
-      points: grammarProgress?.totalScore || 0
-    };
 
     res.status(200).json({
       status: 'success',
       data: {
-        lessons: [...lessons.map(l => ({
+        lessons: lessons.map(l => ({
           id: l._id, title: l.title, category: l.category,
           timeLeft: l.timeLeft, totalTime: l.totalTime,
           progress: l.progress, icon: l.icon, iconBg: l.iconBg,
           lastAccessed: l.lastAccessed
-        })), grammarLesson]
+        }))
       }
     });
   } catch (error) {
@@ -147,10 +155,54 @@ export const getContinueLearning = async (req, res) => {
 export const getChallenges = async (req, res) => {
   try {
     const userId = req.user._id;
-    const challenges = await Challenge.find({
+    const skillLevel = req.user.skillLevel || 'beginner';
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    let challenges = await Challenge.find({
       userId,
-      expiresAt: { $gt: new Date() }
+      date: today
     });
+
+    // Filter out any old/unsupported challenge types
+    const validTypes = ['lessons', 'reading', 'listening'];
+    const invalidChallenges = challenges.filter(c => !validTypes.includes(c.type));
+    if (invalidChallenges.length > 0) {
+      await Challenge.deleteMany({
+        _id: { $in: invalidChallenges.map(c => c._id) }
+      });
+      challenges = challenges.filter(c => validTypes.includes(c.type));
+    }
+
+    if (challenges.length === 0) {
+      const challengeTemplates = [
+        { title: 'Complete 2 Grammar Quizzes', type: 'lessons', target: 2, points: 20 },
+        { title: 'Complete 1 Reading Task', type: 'reading', target: 1, points: 15 },
+        { title: 'Complete 1 Listening Task', type: 'listening', target: 1, points: 15 },
+      ];
+
+      const newChallenges = challengeTemplates.map(template => ({
+        userId,
+        title: template.title,
+        type: template.type,
+        target: template.target,
+        points: template.points,
+        current: 0,
+        completed: false,
+        expiresAt: tomorrow,
+        date: today
+      }));
+
+      await Challenge.insertMany(newChallenges);
+      
+      challenges = await Challenge.find({
+        userId,
+        date: today
+      });
+    }
 
     res.status(200).json({
       status: 'success',
@@ -165,6 +217,42 @@ export const getChallenges = async (req, res) => {
   } catch (error) {
     console.error('Get challenges error:', error);
     res.status(500).json({ status: 'error', message: 'Failed to get challenges' });
+  }
+};
+
+/**
+ * Update challenge progress
+ * POST /api/dashboard/challenges/update
+ */
+export const updateChallengeProgress = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { type, amount = 1 } = req.body;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const challenge = await Challenge.findOne({
+      userId,
+      type,
+      date: today
+    });
+
+    if (challenge && !challenge.completed) {
+      challenge.current += amount;
+      if (challenge.current >= challenge.target) {
+        challenge.completed = true;
+      }
+      await challenge.save();
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: { challenge }
+    });
+  } catch (error) {
+    console.error('Update challenge error:', error);
+    res.status(500).json({ status: 'error', message: 'Failed to update challenge' });
   }
 };
 
@@ -185,6 +273,21 @@ export const getSkills = async (req, res) => {
     const totalLevels = 10;
     const grammarPercentage = Math.round((completedLevels / totalLevels) * 100);
     const grammarPoints = grammarProgress?.totalScore || 0;
+    
+    let readingPercentage = 0;
+    let completedReading = 0;
+    let totalReading = 0;
+    let readingPoints = 0;
+    
+    try {
+      const readingProgress = await ReadingProgress.find({ userId, level: skillLevel });
+      completedReading = readingProgress.filter(r => r.completed).length;
+      totalReading = 10;
+      readingPercentage = Math.round((completedReading / totalReading) * 100);
+      readingPoints = readingProgress.reduce((sum, r) => sum + (r.score || 0), 0);
+    } catch (readingError) {
+      console.error('Error fetching reading progress:', readingError);
+    }
     
     const skillsWithGrammar = skills.map(s => ({
       id: s._id,
@@ -213,6 +316,29 @@ export const getSkills = async (req, res) => {
           totalLevels,
           completedLevels,
           points: grammarPoints
+        }
+      });
+    }
+
+    const readingSkillIndex = skillsWithGrammar.findIndex(s => s.name === 'Reading');
+    if (readingSkillIndex >= 0) {
+      skillsWithGrammar[readingSkillIndex].percentage = readingPercentage;
+      skillsWithGrammar[readingSkillIndex].details = {
+        ...skillsWithGrammar[readingSkillIndex].details,
+        totalReading,
+        completedReading,
+        points: readingPoints
+      };
+    } else {
+      skillsWithGrammar.push({
+        id: 'reading',
+        name: 'Reading',
+        percentage: readingPercentage,
+        color: '#3B82F6',
+        details: {
+          totalReading,
+          completedReading,
+          points: readingPoints
         }
       });
     }

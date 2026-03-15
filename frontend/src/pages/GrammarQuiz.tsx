@@ -12,6 +12,7 @@ import {
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { grammarService } from "../services/grammarService";
+import { dashboardService } from "../services/dashboardService";
 
 interface Question {
   id: number;
@@ -139,6 +140,12 @@ const GrammarQuiz: React.FC = () => {
     try {
       const res = await grammarService.submitAnswers(Number(level), finalAnswers);
       setResult(res.data.result);
+      
+      try {
+        await dashboardService.updateChallenge('lessons');
+      } catch (e) {
+        console.error('Failed to update challenge:', e);
+      }
     } catch (err) {
       console.error("Submit failed:", err);
       setError("Failed to submit answers. Please try again.");
@@ -156,7 +163,7 @@ const GrammarQuiz: React.FC = () => {
   };
 
   const handleComplete = () => {
-    navigate("/dashboard");
+    navigate("/quiz");
   };
 
   if (loading) {
@@ -359,7 +366,7 @@ const GrammarQuiz: React.FC = () => {
       <main className="flex-1 flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-2xl">
           <button
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate("/quiz")}
             className="flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-6 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
