@@ -137,6 +137,25 @@ export const getContinueLearning = async (req, res) => {
     const totalGrammarLevels = 10;
     const grammarProgressPercent = Math.round((completedGrammarLevels / totalGrammarLevels) * 100);
     const nextGrammarLevel = grammarProgress?.currentLevel || 1;
+
+    let completedReading = 0;
+    let totalReading = 10;
+    try {
+      const readingProgress = await ReadingProgress.find({ userId, level: skillLevel });
+      completedReading = readingProgress.filter(r => r.completed).length;
+    } catch (e) {
+      console.error('Error fetching reading progress:', e);
+    }
+
+    let completedListening = 0;
+    let totalListening = 10;
+    try {
+      const ListeningProgress = (await import('../models/listeningProgress.js')).default;
+      const listeningProgress = await ListeningProgress.find({ userId, level: skillLevel });
+      completedListening = listeningProgress.filter(l => l.completed).length;
+    } catch (e) {
+      console.error('Error fetching listening progress:', e);
+    }
     
     const grammarLesson = {
       id: 'grammar',
@@ -154,6 +173,36 @@ export const getContinueLearning = async (req, res) => {
       points: grammarProgress?.totalScore || 0
     };
 
+    const readingLesson = {
+      id: 'reading',
+      title: `Reading Tasks - ${completedReading}/${totalReading} completed`,
+      category: 'Reading',
+      timeLeft: '15 min left',
+      totalTime: 15,
+      progress: Math.round((completedReading / totalReading) * 100),
+      icon: '📚',
+      iconBg: 'bg-green-100',
+      lastAccessed: new Date(),
+      isReading: true,
+      completedLevels: completedReading,
+      totalLevels: totalReading
+    };
+
+    const listeningLesson = {
+      id: 'listening',
+      title: `Listening Tasks - ${completedListening}/${totalListening} completed`,
+      category: 'Listening',
+      timeLeft: '20 min left',
+      totalTime: 20,
+      progress: Math.round((completedListening / totalListening) * 100),
+      icon: '🎧',
+      iconBg: 'bg-orange-100',
+      lastAccessed: new Date(),
+      isListening: true,
+      completedLevels: completedListening,
+      totalLevels: totalListening
+    };
+
     res.status(200).json({
       status: 'success',
       data: {
@@ -162,7 +211,7 @@ export const getContinueLearning = async (req, res) => {
           timeLeft: l.timeLeft, totalTime: l.totalTime,
           progress: l.progress, icon: l.icon, iconBg: l.iconBg,
           lastAccessed: l.lastAccessed
-        })), grammarLesson]
+        })), grammarLesson, readingLesson, listeningLesson]
       }
     });
   } catch (error) {

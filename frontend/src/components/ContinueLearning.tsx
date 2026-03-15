@@ -15,6 +15,8 @@ interface Lesson {
   icon: string;
   iconBg: string;
   isGrammar?: boolean;
+  isReading?: boolean;
+  isListening?: boolean;
   completedLevels?: number;
   totalLevels?: number;
   points?: number;
@@ -84,12 +86,25 @@ export default function ContinueLearning({
       try {
         const res = await dashboardService.getContinueLearning();
         if (res.data?.lessons) {
+          // Filter out only the default lessons, keep Grammar, Reading, Listening from backend
           const filteredLessons = res.data.lessons.filter(
             (lesson: Lesson) =>
               !lesson.isGrammar &&
-              !lesson.title?.toLowerCase().includes("grammar"),
+              !lesson.isReading &&
+              !lesson.isListening &&
+              !lesson.title?.toLowerCase().includes("grammar") &&
+              !lesson.title?.toLowerCase().includes("reading") &&
+              !lesson.title?.toLowerCase().includes("listening")
           );
-          setLessons(filteredLessons);
+          
+          // Get Grammar, Reading, Listening lessons
+          const grammarLesson = res.data.lessons.find((l: Lesson) => l.isGrammar);
+          const readingLesson = res.data.lessons.find((l: Lesson) => l.isReading);
+          const listeningLesson = res.data.lessons.find((l: Lesson) => l.isListening);
+          
+          // Combine: Grammar, Reading, Listening first, then other lessons
+          const skillLessons = [grammarLesson, readingLesson, listeningLesson].filter(Boolean);
+          setLessons([...skillLessons, ...filteredLessons]);
         }
       } catch (error) {
         console.error("Failed to fetch lessons:", error);
@@ -216,7 +231,9 @@ export default function ContinueLearning({
                       </div>
                     </div>
                     <p className="text-xs text-gray-500 mt-1.5">
-                      {lesson.progress}% complete
+                      {lesson.isGrammar || lesson.isReading || lesson.isListening
+                        ? `Level ${lesson.completedLevels || 0} completed`
+                        : `${lesson.progress}% complete`}
                     </p>
                   </div>
                 </div>
