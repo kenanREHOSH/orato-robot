@@ -52,26 +52,38 @@ const Home = () => {
                 Unlock smarter, personalized lessons designed to accelerate your fluency.
               </p>
 
-              {/* CTA Buttons */}
+              {/* CTA Buttons - only for non logged in users */}
+              {!isLoggedIn && (
               <div className="flex flex-col sm:flex-row gap-4 animate-fade-in-up animation-delay-400">
+              <Link
+                to="/signup"
+                className="px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold text-base hover:from-green-600 hover:to-emerald-700 transition-all shadow-2xl hover:shadow-green-500/50 hover:scale-105 text-center no-underline"
+              >
+              Get Started Free
+              </Link>
+              <Link
+              to="/signin"
+              className="px-8 py-3 bg-white/20 backdrop-blur-sm text-white border-2 border-white/40 rounded-xl font-bold text-base hover:bg-white/30 transition-all shadow-2xl hover:scale-105 text-center no-underline"
+              >
+              Sign In
+              </Link>
+              </div>
+              )}
+
+              {/* Go to Dashboard - only for logged in users */}
+              {isLoggedIn && (
+                <div className="flex flex-col sm:flex-row gap-4 animate-fade-in-up animation-delay-400">
                 <Link
-                  to="/signup"
+                  to="/dashboard"
                   className="px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold text-base hover:from-green-600 hover:to-emerald-700 transition-all shadow-2xl hover:shadow-green-500/50 hover:scale-105 text-center no-underline"
                 >
-                  Get Started Free
-                </Link>
-                <Link
-                  to="/signin"
-                  className="px-8 py-3 bg-white/20 backdrop-blur-sm text-white border-2 border-white/40 rounded-xl font-bold text-base hover:bg-white/30 transition-all shadow-2xl hover:scale-105 text-center no-underline"
-                >
-                  Sign In
+                Let’s Begin →
                 </Link>
               </div>
-
+              )}
             </div>
           </div>
         </div>
-
       </div>
 
       {/* Hero Section */}
@@ -86,7 +98,7 @@ const Home = () => {
 
             {/* Main Heading */}
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-              Master Any Language with
+              Unlock Your Language Potential with
               <br />
               <span className="text-green-600">Personalized AI</span>
             </h1>
@@ -112,7 +124,6 @@ const Home = () => {
                 <div className="text-gray-600 mt-2">User Rating</div>
               </div>
             </div>
-
           </div>
         </div>
       </div>
@@ -172,14 +183,6 @@ const Home = () => {
                   </span>
                 </div>
 
-                {/* Hover Arrow */}
-                <div className="mt-6 flex items-center text-green-600 font-semibold opacity-0 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-2 transition-all duration-300">
-                  <span className="text-sm">Learn More</span>
-                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-
               </div>
             </div>
 
@@ -212,15 +215,6 @@ const Home = () => {
                     Streak Tracking
                   </span>
                 </div>
-
-                {/* Hover Arrow */}
-                <div className="mt-6 flex items-center text-gray-700 font-semibold opacity-0 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-2 transition-all duration-300">
-                  <span className="text-sm">Learn More</span>
-                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-
               </div>
             </div>
 
@@ -253,20 +247,9 @@ const Home = () => {
                     Flexible
                   </span>
                 </div>
-
-                {/* Hover Arrow */}
-                <div className="mt-6 flex items-center text-emerald-600 font-semibold opacity-0 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-2 transition-all duration-300">
-                  <span className="text-sm">Learn More</span>
-                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-
               </div>
             </div>
-
           </div>
-
         </div>
       </div>
 
@@ -316,7 +299,6 @@ const Home = () => {
                 <p className="text-gray-600 text-center text-sm leading-relaxed">
                   Sign up free and take a quick test to determine your English level.
                 </p>
-
               </div>
             </div>
 
@@ -345,7 +327,6 @@ const Home = () => {
                 <p className="text-gray-600 text-center text-sm leading-relaxed">
                   Tell us your objectives and we create a personalized learning path.
                 </p>
-
               </div>
             </div>
 
@@ -374,7 +355,6 @@ const Home = () => {
                 <p className="text-gray-600 text-center text-sm leading-relaxed">
                   Practice with AI tutors, interactive lessons, and real-world scenarios.
                 </p>
-
               </div>
             </div>
 
@@ -406,9 +386,7 @@ const Home = () => {
 
               </div>
             </div>
-
           </div>
-
         </div>
       </div>
 
@@ -441,7 +419,6 @@ const Home = () => {
                     Orato Way
                   </div>
                 </div>
-
                 <div className="space-y-4">
                   
                   <div className="flex items-start gap-3 bg-white rounded-xl p-4 shadow-sm">
@@ -503,14 +480,11 @@ const Home = () => {
                       <p className="text-sm text-gray-600">Proven track record of success</p>
                     </div>
                   </div>
-
                 </div>
-
                 <div className="mt-8 text-center">
                   <div className="text-4xl font-black text-green-600">5x Faster</div>
                   <p className="text-gray-600 font-medium mt-2">than traditional methods</p>
                 </div>
-
               </div>
             </div>
 
@@ -586,19 +560,14 @@ const Home = () => {
                       <p className="text-sm text-gray-600">Long, slow progress</p>
                     </div>
                   </div>
-
                 </div>
-
                 <div className="mt-8 text-center">
                   <div className="text-4xl font-black text-gray-600">Old School</div>
                   <p className="text-gray-500 font-medium mt-2">outdated methods</p>
                 </div>
-
               </div>
             </div>
-
           </div>
-
         </div>
       </div>
 
@@ -659,15 +628,27 @@ const Home = () => {
               </div>
 
               {/* CTA Button */}
-              <Link
-                to="/signup"
-                className="inline-flex items-center gap-3 px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-700 transition-all shadow-2xl hover:shadow-green-500/50 hover:scale-105 no-underline"
-              >
-                <span>Begin Your Journey</span>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {!isLoggedIn ? (
+                  <Link
+                    to="/signup"
+                    className="inline-flex items-center gap-3 px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-700 transition-all shadow-2xl hover:shadow-green-500/50 hover:scale-105 no-underline"
+                  >
+                  <span>Begin Your Journey</span>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </Link>
+                  </svg>
+                    </Link>
+                  ) : (
+                <Link
+                  to="/dashboard"
+                  className="inline-flex items-center gap-3 px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-700 transition-all shadow-2xl hover:shadow-green-500/50 hover:scale-105 no-underline"
+                  >
+                  <span>Continue Learning</span>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                  </Link>
+              )}
 
               {/* Social Proof */}
               <div className="mt-6 flex items-center gap-3">
