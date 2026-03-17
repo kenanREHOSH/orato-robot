@@ -2,6 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { Flame, Trophy, Award, BookOpen } from "lucide-react";
 
+interface StatsData {
+  dayStreak: number;
+  totalPoints: number;
+  badgesEarned: number;
+  lessonsDone: number;
+}
+
 interface StatCard {
   icon: React.ElementType;
   iconBg: string;
@@ -13,7 +20,7 @@ interface StatCard {
   subtextColor: string;
 }
 
-const getStats = (data: typeof statsData): StatCard[] => [
+const getStats = (data: StatsData): StatCard[] => [
   {
     icon: Flame,
     iconBg: "bg-orange-100",
@@ -101,13 +108,12 @@ export default function StatsGrid() {
   const gridRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [statsData, setStatsData] = useState({
+  const [statsData, setStatsData] = useState<StatsData>({
     dayStreak: 0,
     totalPoints: 0,
     badgesEarned: 0,
     lessonsDone: 0,
   });
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -130,8 +136,6 @@ export default function StatsGrid() {
         }
       } catch (error) {
         console.error("Failed to fetch stats:", error);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -140,7 +144,6 @@ export default function StatsGrid() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Cards entrance animation with flip effect
       cardsRef.current.forEach((card, index) => {
         if (card) {
           gsap.fromTo(
@@ -233,7 +236,6 @@ export default function StatsGrid() {
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => handleMouseLeave(index)}
           >
-            {/* Shimmer effect on hover */}
             {isHovered && (
               <div className="absolute inset-0 pointer-events-none overflow-hidden">
                 <div
