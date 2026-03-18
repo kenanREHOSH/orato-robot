@@ -22,14 +22,6 @@ interface Lesson {
 
 const defaultLessons: Lesson[] = [
   {
-    id: 4,
-    title: "Visual Vocabulary Cards",
-    timeLeft: "10 min left",
-    progress: 0,
-    icon: "🃏",
-    iconBg: "bg-yellow-100",
-  },
-  {
     id: 2,
     title: "Listening Lab",
     timeLeft: "25 min left",
@@ -89,10 +81,10 @@ export default function ContinueLearning({
       try {
         const token = localStorage.getItem("token");
         console.log("ContinueLearning - Token:", token ? "exists" : "null");
-        
+
         const skillsRes = await dashboardService.getSkills();
         console.log("ContinueLearning - Skills response:", skillsRes);
-        
+
         const skills = skillsRes.data?.skills || [];
         const grammarSkill = skills.find((s: any) => s.name === 'Grammar');
         const readingSkill = skills.find((s: any) => s.name === 'Reading');
@@ -173,9 +165,7 @@ export default function ContinueLearning({
   }, [loading, displayedLessons]);
 
   const handleLessonClick = (lesson: Lesson) => {
-    if (lesson.title === "Visual Vocabulary Cards") {
-      navigate("/visual-cards");
-    } else if (lesson.title === "Listening Lab") {
+    if (lesson.title === "Listening Lab") {
       navigate("/listening");
     } else if (lesson.title === "Reading Tasks") {
       navigate("/reading");
@@ -192,7 +182,7 @@ export default function ContinueLearning({
     return (
       <div ref={containerRef} className="bg-white rounded-2xl p-6 card-shadow">
         <div className="animate-pulse space-y-4">
-          {[1, 2, 3, 4, 5].map((i) => (
+          {[1, 2, 3, 4].map((i) => (
             <div key={i} className="h-24 bg-gray-100 rounded-xl"></div>
           ))}
         </div>
