@@ -14,6 +14,7 @@ import {
   Loader2 // Added for loading state
 } from 'lucide-react';
 import API from '../services/api';
+import { dashboardService } from '../services/dashboardService';
 
 // --- TYPES ---
 interface Lesson {
@@ -40,6 +41,36 @@ interface Activity {
   title: string;
   time: string;
   icon: string;
+}
+
+interface DashboardStats {
+  dayStreak?: number;
+  totalPoints?: number;
+  lessonsDone?: number;
+  lessonsThisWeek?: number;
+}
+
+interface DashboardSkill {
+  id?: string;
+  name: string;
+  percentage?: number;
+  details?: Record<string, unknown>;
+}
+
+interface DashboardChallenge {
+  id: string;
+  title: string;
+  current: number;
+  target: number;
+  points: number;
+  type: string;
+  completed: boolean;
+}
+
+interface DashboardAchievement {
+  id: string;
+  title: string;
+  description: string;
 }
 
 // --- SUB-COMPONENTS ---
@@ -87,21 +118,105 @@ export default function Progress() {
         setIsLoading(true);
         setError(null);
 
-        const response = await API.get('/progress');
-        const data = response.data;
+        const [progressRes, statsRes, skillsRes, challengesRes, achievementsRes] = await Promise.allSettled([
+          API.get('/progress'),
+          dashboardService.getStats(),
+          dashboardService.getSkills(),
+          dashboardService.getChallenges(),
+          dashboardService.getAchievements(),
+        ]);
 
-        setCompletedLessons(data.lessons || []);
-        setWeeklyStats(data.stats || []);
-        setRecentActivities(data.activities || []);
-        if (data.summary) setSummary(data.summary);
+        const progressData = progressRes.status === 'fulfilled' ? progressRes.value.data : {};
+        const dashboardStats: DashboardStats =
+          statsRes.status === 'fulfilled' ? (statsRes.value.data?.stats || {}) : {};
+        const dashboardSkills: DashboardSkill[] =
+          skillsRes.status === 'fulfilled' ? (skillsRes.value.data?.skills || []) : [];
+        const dashboardChallenges: DashboardChallenge[] =
+          challengesRes.status === 'fulfilled' ? (challengesRes.value.data?.challenges || []) : [];
+        const dashboardAchievements: DashboardAchievement[] =
+          achievementsRes.status === 'fulfilled' ? (achievementsRes.value.data?.achievements || []) : [];
+
+        let lessons: Lesson[] = progressData.lessons || [];
+        let stats: StatItem[] = progressData.stats || [];
+        let activities: Activity[] = progressData.activities || [];
+        const apiSummary: Summary = progressData.summary || {
+          totalLessons: 0,
+          avgScore: 0,
+          totalPoints: 0,
+          dayStreak: 0,
+          learningHours: 0,
+        };
+
+        if (lessons.length === 0 && dashboardSkills.length > 0) {
+          lessons = dashboardSkills.map((skill, index) => {
+            const score = skill.percentage || 0;
+            return {
+              id: index + 1,
+              title: `${skill.name} Progress`,
+              language: 'English',
+              icon: skill.name === 'Grammar' ? '✍️' : skill.name === 'Reading' ? '📚' : skill.name === 'Listening' ? '🎧' : '📖',
+              date: new Date().toISOString().split('T')[0],
+              time: new Date().toTimeString().slice(0, 5),
+              score,
+              duration: '20 min',
+              points: Math.round(score * 2),
+            };
+          });
+        }
+
+        if (stats.length === 0) {
+          const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+          const today = new Date().getDay();
+          const weekLessons = dashboardStats.lessonsThisWeek || dashboardChallenges.reduce((sum, c) => sum + (c.current || 0), 0);
+
+          stats = dayNames.map((day, idx) => ({
+            day,
+            lessons: idx === today ? weekLessons : 0,
+            points: idx === today ? (dashboardStats.totalPoints || 0) : 0,
+          }));
+        }
+
+        if (activities.length === 0) {
+          const achievementActivities: Activity[] = dashboardAchievements.map((a, index) => ({
+            id: index + 1,
+            type: 'achievement',
+            title: `Earned "${a.title}" badge`,
+            time: 'recently',
+            icon: '🏆',
+          }));
+
+          const challengeActivities: Activity[] = dashboardChallenges.slice(0, 3).map((c, index) => ({
+            id: index + 101,
+            type: 'challenge',
+            title: `${c.title} (${c.current}/${c.target})`,
+            time: c.completed ? 'completed' : 'in progress',
+            icon: c.completed ? '✅' : '🎯',
+          }));
+
+          activities = [...achievementActivities, ...challengeActivities];
+        }
+
+        const skillPercentages = dashboardSkills.map((s) => s.percentage || 0).filter((v) => v > 0);
+        const derivedAvgScore = skillPercentages.length > 0
+          ? Math.round(skillPercentages.reduce((sum, value) => sum + value, 0) / skillPercentages.length)
+          : apiSummary.avgScore;
+
+        const mergedSummary: Summary = {
+          totalLessons: dashboardStats.lessonsDone || apiSummary.totalLessons || lessons.length,
+          avgScore: derivedAvgScore || 0,
+          totalPoints: dashboardStats.totalPoints || apiSummary.totalPoints || 0,
+          dayStreak: dashboardStats.dayStreak || apiSummary.dayStreak || 0,
+          learningHours: apiSummary.learningHours || Math.round((lessons.length * 20) / 60),
+        };
+
+        setCompletedLessons(lessons);
+        setWeeklyStats(stats);
+        setRecentActivities(activities);
+        setSummary(mergedSummary);
 
       } catch (err: any) {
         console.error("Failed to fetch progress data:", err);
-        if (err?.response?.status === 401) {
-          setError("Please log in to view your progress.");
-        } else {
-          setError("Unable to load progress data. Please try again later.");
-        }
+        setError("Unable to load progress data. Please try again later.");
       } finally {
         setIsLoading(false);
       }
