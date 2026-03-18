@@ -13,42 +13,42 @@ interface StatCard {
   subtextColor: string;
 }
 
-const stats: StatCard[] = [
+const getStats = (data: typeof statsData): StatCard[] => [
   {
     icon: Flame,
     iconBg: "bg-orange-100",
     iconColor: "text-orato-orange",
-    value: 15,
+    value: data.dayStreak,
     label: "Day Streak",
-    subtext: "+2 from last week",
+    subtext: "",
     subtextColor: "text-orato-green",
   },
   {
     icon: Trophy,
     iconBg: "bg-yellow-100",
     iconColor: "text-orato-yellow",
-    value: 2450,
+    value: data.totalPoints,
     suffix: "",
     label: "Total Points",
-    subtext: "Top 10% this month",
+    subtext: "",
     subtextColor: "text-orato-green",
   },
   {
     icon: Award,
     iconBg: "bg-purple-100",
     iconColor: "text-orato-purple",
-    value: 12,
+    value: data.badgesEarned,
     label: "Badges Earned",
-    subtext: "3 more to next level",
+    subtext: "",
     subtextColor: "text-gray-500",
   },
   {
     icon: BookOpen,
     iconBg: "bg-green-100",
     iconColor: "text-orato-green",
-    value: 47,
+    value: data.lessonsDone,
     label: "Lessons Done",
-    subtext: "+5 this week",
+    subtext: "",
     subtextColor: "text-orato-green",
   },
 ];
@@ -101,6 +101,42 @@ export default function StatsGrid() {
   const gridRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [statsData, setStatsData] = useState({
+    dayStreak: 0,
+    totalPoints: 0,
+    badgesEarned: 0,
+    lessonsDone: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch("http://localhost:5002/api/dashboard/stats", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + localStorage.getItem("token"),
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const stats = data.data?.stats || {};
+          setStatsData({
+            dayStreak: stats.dayStreak || 0,
+            totalPoints: stats.totalPoints || 0,
+            badgesEarned: stats.badgesEarned || 0,
+            lessonsDone: stats.lessonsDone || 0,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch stats:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -168,6 +204,8 @@ export default function StatsGrid() {
     setHoveredIndex(null);
   };
 
+  const stats = getStats(statsData);
+
   return (
     <div
       ref={gridRef}
@@ -219,9 +257,11 @@ export default function StatsGrid() {
             <div className="mt-4 pl-1">
               <AnimatedNumber value={stat.value} suffix={stat.suffix} />
               <p className="text-sm text-gray-600 mt-1">{stat.label}</p>
-              <p className={`text-xs ${stat.subtextColor} mt-1 font-medium`}>
-                {stat.subtext}
-              </p>
+              {stat.subtext && (
+                <p className={`text-xs ${stat.subtextColor} mt-1 font-medium`}>
+                  {stat.subtext}
+                </p>
+              )}
             </div>
           </div>
         );

@@ -53,6 +53,17 @@ export const dashboardService = {
     return res.json();
   },
 
+  // Update challenge progress
+  updateChallenge: async (type: string, amount: number = 1) => {
+    const res = await fetch(`${BASE_URL}/challenges/update`, {
+      method: 'POST',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, amount })
+    });
+    if (!res.ok) throw new Error('Failed to update challenge');
+    return res.json();
+  },
+
   // Get skill progress
   getSkills: async () => {
     const res = await fetch(`${BASE_URL}/skills`, { headers: authHeaders() });

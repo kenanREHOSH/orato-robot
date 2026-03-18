@@ -26,7 +26,9 @@ import dashboardRoutes from "./routes/dashboard-routes.js";
 import quizRoutes from "./routes/quiz-routes.js"
 import listeningRoutes from "./routes/listening-routes.js"
 import readingRoutes from "./routes/reading-routes.js"
+import grammarRoutes from "./routes/grammar-routes.js"
 import speakingCoachRoutes from "./routes/speakingCoachRoutes.js"
+import { initCronJobs } from "./services/cronJobs.js";
 
 console.log("Cloudinary Key:", process.env.CLOUDINARY_API_KEY);
 
@@ -69,7 +71,6 @@ connectDB();
 verifyEmailConfig();
 
 // Initialize Cron Jobs
-import { initCronJobs } from "./services/cronJobs.js";
 initCronJobs();
 
 // ROUTES
@@ -85,6 +86,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/quiz", quizRoutes);
 app.use("/api/listening", listeningRoutes);
 app.use("/api/reading", readingRoutes);
+app.use("/api/grammar", grammarRoutes);
 app.use("/api/speaking-coach", speakingCoachRoutes);
 
 // Protected route test

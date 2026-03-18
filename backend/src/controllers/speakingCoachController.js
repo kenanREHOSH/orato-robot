@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const COACH_SYSTEM_PROMPT =
   "You are a friendly English speaking coach. Correct grammar briefly, explain simply, and ask one short follow-up question. Keep replies short and clear for learners.";
@@ -16,42 +16,40 @@ export const chatWithSpeakingCoach = async (req, res) => {
     }
 
     // Check API key at request time so the server can still start without it
-    if (!process.env.OPENAI_API_KEY) {
+    if (!process.env.GEMINI_API_KEY) {
       return res.status(500).json({
         success: false,
-        message: "OpenAI API key is not configured on the server.",
+        message: "Gemini API key is not configured on the server.",
       });
     }
 
-    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    // Initialize Gemini client lazily
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-    const conversationContext = [
-      {
-        role: "system",
-        content: COACH_SYSTEM_PROMPT,
-      },
-      {
-        role: "user",
-        content: message,
-      },
-    ];
-
-    const response = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: conversationContext,
+    // Provide the system prompt and the user's message
+    const result = await model.generateContent({
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: `${COACH_SYSTEM_PROMPT}\n\nUser: ${message}` }],
+        },
+      ],
     });
+
+    const responseText = result.response.text();
 
     // Send response to frontend
     return res.status(200).json({
       success: true,
       userMessage: message,
-      coachReply: response.choices[0].message.content,
+      coachReply: responseText,
     });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Speaking coach AI error:`, error);
     return res.status(500).json({
       success: false,
-      message: "Failed to get AI coach reply.",
+      message: "Failed to get AI coach reply from Gemini.",
     });
   }
 };

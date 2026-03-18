@@ -1,6 +1,7 @@
 import cron from 'node-cron';
 import User from '../models/user.js';
 import Settings from '../models/settings.model.js';
+import mongoose from 'mongoose';
 import { sendDailyReminderEmail, sendWeeklyProgressEmail } from './emailService.js';
 import moment from 'moment';
 
@@ -52,6 +53,12 @@ export const initCronJobs = () => {
     // Scheduled using standard cron expression format: minute hour dayOfMonth month dayOfWeek
     cron.schedule('0 10 * * 0', async () => {
         try {
+            // Add mongoose connection check
+            if (mongoose.connection.readyState !== 1) {
+                console.warn("⚠️  [CRON] Skipping Weekly Progress Job (MongoDB not connected)");
+                return;
+            }
+
             console.log('📊 [CRON] Triggering Weekly Progress Updates...');
 
             // Find all users who have progressUpdates ON
@@ -75,6 +82,28 @@ export const initCronJobs = () => {
             }
         } catch (error) {
             console.error('❌ [CRON] Error in Weekly Progress Job:', error);
+        }
+    });
+    
+    // ============================================
+    // 3. Weekly Stats Reset (Runs every Sunday at midnight)
+    // ============================================
+    // Moves lessonsThisWeek to lessonsLastWeek and resets lessonsThisWeek
+    cron.schedule('0 0 * * 0', async () => {
+        try {
+            console.log('🔄 [CRON] Resetting weekly stats...');
+
+            await User.updateMany(
+                { 'stats.lessonsThisWeek': { $gt: 0 } },
+                {
+                    $set: { 'stats.lessonsLastWeek': '$stats.lessonsThisWeek' },
+                    $set: { 'stats.lessonsThisWeek': 0 }
+                }
+            );
+
+            console.log('✅ Weekly stats reset completed');
+        } catch (error) {
+            console.error('❌ [CRON] Error in Weekly Stats Reset:', error);
         }
     });
 

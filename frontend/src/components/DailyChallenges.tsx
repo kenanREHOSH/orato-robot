@@ -1,176 +1,294 @@
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
-import { Target, Plus } from 'lucide-react';
+import { Target, BookOpen, Headphones, Trophy, Clock, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { dashboardService } from '../services/dashboardService';
 
 interface Challenge {
-  id: number;
+  id: string;
   title: string;
   current: number;
   target: number;
   points: number;
+  type: string;
+  completed: boolean;
+  expiresAt: string;
 }
 
-const challenges: Challenge[] = [
-  {
-    id: 1,
-    title: 'Complete 3 lessons',
-    current: 2,
-    target: 3,
-    points: 50,
-  },
-  {
-    id: 2,
-    title: 'Practice speaking for 10 min',
-    current: 7,
-    target: 10,
-    points: 30,
-  },
-  {
-    id: 3,
-    title: 'Master 20 new words',
-    current: 15,
-    target: 20,
-    points: 40,
-  },
-];
+const getChallengeIcon = (type: string) => {
+  switch (type) {
+    case 'lessons':
+      return <BookOpen className="w-5 h-5" />;
+    case 'reading':
+      return <BookOpen className="w-5 h-5" />;
+    case 'listening':
+      return <Headphones className="w-5 h-5" />;
+    default:
+      return <Trophy className="w-5 h-5" />;
+  }
+};
+
+const getChallengeColor = (type: string) => {
+  switch (type) {
+    case 'lessons':
+      return { bg: 'bg-green-600', text: 'text-white', gradient: 'from-green-500 to-emerald-500' };
+    case 'reading':
+      return { bg: 'bg-teal-600', text: 'text-white', gradient: 'from-teal-500 to-cyan-500' };
+    case 'listening':
+      return { bg: 'bg-lime-600', text: 'text-white', gradient: 'from-lime-500 to-green-500' };
+    default:
+      return { bg: 'bg-emerald-600', text: 'text-white', gradient: 'from-emerald-500 to-teal-500' };
+  }
+};
 
 export default function DailyChallenges() {
   const containerRef = useRef<HTMLDivElement>(null);
   const itemsRef = useRef<(HTMLDivElement | null)[]>([]);
   const progressRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [showPoints] = useState<number | null>(null);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      // Header fade in
-      const header = containerRef.current?.querySelector('.header');
-      if (header) {
-        gsap.fromTo(
-          header,
-          { opacity: 0 },
-          { opacity: 1, duration: 0.5, ease: 'power2.out' }
-        );
+    const fetchChallenges = async () => {
+      try {
+        const res = await dashboardService.getChallenges();
+        if (res.data?.challenges) {
+          setChallenges(res.data.challenges);
+        }
+      } catch (error) {
+        console.error('Failed to fetch challenges:', error);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      // Challenges stagger up
-      itemsRef.current.forEach((item, index) => {
-        if (item) {
-          gsap.fromTo(
-            item,
-            { y: 20, opacity: 0 },
-            { 
-              y: 0, 
-              opacity: 1, 
-              duration: 0.4, 
-              delay: 0.1 + index * 0.1,
-              ease: 'power2.out',
-            }
-          );
-        }
-      });
-
-      // Progress bars liquid animation
-      progressRefs.current.forEach((progress, index) => {
-        if (progress) {
-          const challenge = challenges[index];
-          const percentage = (challenge.current / challenge.target) * 100;
-          gsap.fromTo(
-            progress,
-            { width: '0%' },
-            { 
-              width: `${percentage}%`, 
-              duration: 1.2, 
-              delay: 0.3 + index * 0.15,
-              ease: 'expo.out',
-            }
-          );
-        }
-      });
-    });
-
-    return () => ctx.revert();
+    fetchChallenges();
   }, []);
+
+  useEffect(() => {
+    if (!loading && challenges.length > 0) {
+      const ctx = gsap.context(() => {
+        const header = containerRef.current?.querySelector('.header');
+        if (header) {
+          gsap.fromTo(
+            header,
+            { opacity: 0, y: -10 },
+            { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }
+          );
+        }
+
+        itemsRef.current.forEach((item, index) => {
+          if (item) {
+            gsap.fromTo(
+              item,
+              { y: 20, opacity: 0, scale: 0.95 },
+              { 
+                y: 0, 
+                opacity: 1, 
+                scale: 1,
+                duration: 0.4, 
+                delay: 0.1 + index * 0.1,
+                ease: 'back.out(1.7)',
+              }
+            );
+          }
+        });
+
+        progressRefs.current.forEach((progress, index) => {
+          if (progress && challenges[index]) {
+            const challenge = challenges[index];
+            const percentage = (challenge.current / challenge.target) * 100;
+            gsap.fromTo(
+              progress,
+              { width: '0%' },
+              { 
+                width: `${percentage}%`, 
+                duration: 1.2, 
+                delay: 0.3 + index * 0.15,
+                ease: 'expo.out',
+              }
+            );
+          }
+        });
+      });
+
+      return () => ctx.revert();
+    }
+  }, [loading, challenges]);
+
+  const handleChallengeClick = (challenge: Challenge) => {
+    switch (challenge.type) {
+      case 'lessons':
+        navigate('/grammar');
+        break;
+      case 'reading':
+        navigate('/reading');
+        break;
+      case 'listening':
+        navigate('/listening');
+        break;
+      default:
+        break;
+    }
+  };
+
+  const completedCount = challenges.filter(c => c.completed).length;
+  const totalPoints = challenges.filter(c => c.completed).reduce((sum, c) => sum + c.points, 0);
+
+  if (loading) {
+    return (
+      <div ref={containerRef} className="bg-[#dcfae2] rounded-2xl p-6 shadow-xl border border-green-200">
+        <div className="header flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-green-600 flex items-center justify-center">
+              <Target className="w-5 h-5 text-white" />
+            </div>
+            <h3 className="text-lg font-semibold text-green-900 font-heading">
+              Daily Challenges
+            </h3>
+          </div>
+        </div>
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="animate-pulse bg-green-200/50 rounded-xl p-4">
+              <div className="h-4 bg-green-300 rounded w-3/4 mb-3"></div>
+              <div className="h-2 bg-green-300 rounded-full"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 
       ref={containerRef}
-      className="bg-white rounded-2xl p-6 card-shadow"
+      className="bg-[#dcfae2] rounded-2xl p-6 shadow-xl border border-green-200"
     >
       {/* Header */}
-      <div className="header flex items-center gap-2 mb-5">
-        <div className="w-8 h-8 rounded-lg bg-emerald-green-light flex items-center justify-center">
-          <Target className="w-4 h-4 text-emerald-green" />
+      <div className="header flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-green-600 flex items-center justify-center">
+            <Target className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-green-900 font-heading">
+              Daily Challenges
+            </h3>
+            <p className="text-xs text-green-700">
+              Complete challenges to earn points
+            </p>
+          </div>
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 font-heading">
-          Daily Challenges
-        </h3>
+        
+        {/* Progress Badge */}
+        <div className="flex items-center gap-2 bg-green-600 px-3 py-1.5 rounded-full">
+          <CheckCircle className="w-4 h-4 text-white" />
+          <span className="text-sm font-semibold text-white">
+            {completedCount}/{challenges.length}
+          </span>
+        </div>
       </div>
 
+      {/* Summary Card */}
+      {completedCount > 0 && (
+        <div className="bg-green-200 rounded-xl p-4 mb-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center">
+              <Trophy className="w-5 h-5 text-yellow-900" />
+            </div>
+            <div>
+              <p className="text-xs text-green-800">Completed!</p>
+              <p className="text-sm font-semibold text-green-900">+{totalPoints} points earned</p>
+            </div>
+          </div>
+          {completedCount === challenges.length && (
+            <div className="text-2xl">🎉</div>
+          )}
+        </div>
+      )}
+
       {/* Challenges List */}
-      <div className="space-y-5">
+      <div className="space-y-3">
         {challenges.map((challenge, index) => {
           const percentage = (challenge.current / challenge.target) * 100;
-          const isComplete = challenge.current >= challenge.target;
+          const isComplete = challenge.completed;
+          const colors = getChallengeColor(challenge.type);
           
           return (
             <div
               key={challenge.id}
               ref={(el) => { itemsRef.current[index] = el; }}
-              className="relative"
+              className={`relative overflow-hidden rounded-xl p-4 transition-all duration-300 ${
+                isComplete 
+                  ? 'bg-green-200/70' 
+                  : 'bg-green-100 hover:bg-green-200 cursor-pointer'
+              }`}
+              onClick={() => !isComplete && handleChallengeClick(challenge)}
             >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-900">
-                  {challenge.title}
-                </span>
-                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-lg ${colors.bg} flex items-center justify-center`}>
+                    <span className={colors.text}>
+                      {getChallengeIcon(challenge.type)}
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-green-900">
+                      {challenge.title}
+                    </h4>
+                    <p className="text-xs text-green-700 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {challenge.current}/{challenge.target} completed
+                    </p>
+                  </div>
+                </div>
+                
+                <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full ${
                   isComplete 
-                    ? 'bg-emerald-500 text-white' 
-                    : 'bg-emerald-100 text-emerald-600'
+                    ? 'bg-yellow-400 text-yellow-900' 
+                    : 'bg-green-600 text-white'
                 }`}>
-                  +{challenge.points} pts
-                </span>
+                  <Trophy className="w-3 h-3" />
+                  <span className="text-xs font-bold">
+                    {isComplete ? '+' : ''}{challenge.points}
+                  </span>
+                </div>
               </div>
 
               {/* Progress Bar */}
               <div className="relative">
-                <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-2.5 bg-green-300/50 rounded-full overflow-hidden">
                   <div
                     ref={(el) => { progressRefs.current[index] = el; }}
                     className={`h-full rounded-full transition-all duration-500 relative ${
-                      isComplete ? 'bg-emerald-300' : 'bg-emerald-300'
+                      isComplete ? 'bg-yellow-400' : `bg-gradient-to-r ${colors.gradient}`
                     }`}
                     style={{ width: '0%' }}
                   >
-                    {/* Liquid effect */}
-                    <div className="absolute inset-0 opacity-20">
-                      <div 
-                        className="w-full h-full"
-                        style={{
-                          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)',
-                          animation: 'liquid-flow 2s linear infinite',
-                        }}
-                      />
-                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
                   </div>
                 </div>
                 
-                {/* Progress text */}
-                <div className="flex items-center justify-between mt-1.5">
-                  <span className="text-xs text-gray-500">
-                    {challenge.current} / {challenge.target}
-                  </span>
-                  <span className="text-xs text-gray-400">
+                <div className="flex justify-between mt-1.5">
+                  <span className={`text-xs font-medium ${
+                    isComplete ? 'text-green-900' : 'text-green-700'
+                  }`}>
                     {Math.round(percentage)}%
                   </span>
+                  {isComplete && (
+                    <span className="text-xs font-medium text-green-800 flex items-center gap-1">
+                      <CheckCircle className="w-3 h-3" /> Complete!
+                    </span>
+                  )}
                 </div>
               </div>
 
-              {/* Points popup animation */}
-              {showPoints === challenge.id && (
-                <div className="absolute top-0 right-0 pointer-events-none">
-                  <div className="flex items-center gap-1 text-orato-green font-bold animate-float-up">
-                    <Plus className="w-4 h-4" />
-                    {challenge.points}
+              {isComplete && (
+                <div className="absolute top-2 right-2">
+                  <div className="bg-green-600 rounded-full p-1">
+                    <CheckCircle className="w-3 h-3 text-white" />
                   </div>
                 </div>
               )}
@@ -179,25 +297,11 @@ export default function DailyChallenges() {
         })}
       </div>
 
-      <style>{`
-        @keyframes liquid-flow {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        @keyframes float-up {
-          0% { 
-            opacity: 1; 
-            transform: translateY(0) scale(1); 
-          }
-          100% { 
-            opacity: 0; 
-            transform: translateY(-30px) scale(1.2); 
-          }
-        }
-        .animate-float-up {
-          animation: float-up 1.5s ease-out forwards;
-        }
-      `}</style>
+      {completedCount < challenges.length && (
+        <p className="text-center text-xs text-green-600 mt-4">
+          Tap on a challenge to start
+        </p>
+      )}
     </div>
   );
 }
