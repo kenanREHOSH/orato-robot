@@ -126,11 +126,11 @@ export default function DailyChallenges() {
 
   if (loading) {
     return (
-      <div ref={containerRef} className="bg-[#dcfae2] rounded-2xl p-6 shadow-xl border border-green-200">
+      <div ref={containerRef} className="bg-white rounded-2xl p-6 shadow-xl border border-green-200">
         <div className="header flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-green-600 flex items-center justify-center">
-              <Target className="w-5 h-5 text-white" />
+              <Target className="w-5 h-5 text-white"/>
             </div>
             <h3 className="text-lg font-semibold text-green-900 font-heading">
               Daily Challenges
@@ -210,7 +210,7 @@ export default function DailyChallenges() {
               ref={(el) => { itemsRef.current[index] = el; }}
               className={`relative overflow-hidden rounded-xl p-4 transition-all duration-300 ${
                 isComplete 
-                  ? 'bg-green-200/70' 
+                  ? 'bg-green-100/70' 
                   : 'bg-green-100 hover:bg-green-200 cursor-pointer'
               }`}
               onClick={() => !isComplete && handleChallengeClick(challenge)}
@@ -251,7 +251,7 @@ export default function DailyChallenges() {
                   <div
                     ref={(el) => { progressRefs.current[index] = el; }}
                     className={`h-full rounded-full transition-all duration-500 relative ${
-                      isComplete ? 'bg-yellow-400' : `bg-gradient-to-r ${colors.gradient}`
+                      isComplete ? 'bg-green-400' : `bg-gradient-to-r ${colors.gradient}`
                     }`}
                     style={{ width: '0%' }}
                   >

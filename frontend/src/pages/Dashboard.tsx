@@ -12,6 +12,7 @@ import DailyChallenges from "../components/DailyChallenges";
 import SkillProgress from "../components/SkillProgress";
 import RecentAchievements from "../components/RecentAchievements";
 import SpeakingCoach from "../components/SpeakingCoach";
+import VisualVocabularyBanner from "../components/VisualVocabularyBanner";
 
 const Dashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -19,16 +20,13 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLessonClick = (_lessonId: string | number, lessonTitle: string) => {
-    if (lessonTitle === 'Visual Vocabulary Cards') {
-      navigate('/visual-cards');
-    } else if (lessonTitle === 'Listening Lab' || lessonTitle === 'English Pronunciation Basics') {
+    if (lessonTitle === 'Listening Lab' || lessonTitle === 'English Pronunciation Basics') {
       navigate('/listening');
     } else if (lessonTitle === 'Reading Tasks') {
       navigate('/reading');
     } else if (lessonTitle === 'Grammar Practice' || lessonTitle === 'Take a Quiz') {
       navigate('/grammar');
     } else if (lessonTitle === 'English Vocabulary: Daily Life') {
-      // Navigate to quiz with vocabulary filter pre-selected
       navigate('/quiz?filter=Vocabulary');
     }
   };
@@ -71,17 +69,18 @@ const Dashboard: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Column */}
             <div className="lg:col-span-2 space-y-6">
               <ContinueLearning onLessonClick={handleLessonClick} />
               <DailyChallenges />
-
-              {/* ✅ Speaking Coach Feature */}
               <SpeakingCoach />
             </div>
 
+            {/* Right Column */}
             <div className="space-y-6">
               <SkillProgress />
               <RecentAchievements />
+              <VisualVocabularyBanner />
             </div>
           </div>
         </main>
