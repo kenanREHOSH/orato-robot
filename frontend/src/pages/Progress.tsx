@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from "../components/Navbar"; // Correct import statement
 import Footer from '../components/Footer'; // Correct import statement for Footer
+import jsPDF from 'jspdf';
 
 import { 
   Calendar, 
@@ -72,6 +73,13 @@ interface DashboardAchievement {
   description: string;
 }
 
+interface UserProfile {
+  fullName?: string;
+  age?: number;
+  nativeLanguage?: string;
+  skillLevel?: string;
+}
+
 // --- SUB-COMPONENTS ---
 const StatCard = ({ icon: Icon, value, label, colorClass, darkMode }: any) => (
   <div className={`rounded-2xl p-6 transition-all duration-300 border hover:scale-[1.02] ${
@@ -105,6 +113,8 @@ export default function Progress() {
   const [weeklyStats, setWeeklyStats] = useState<StatItem[]>([]);
   const [recentActivities, setRecentActivities] = useState<Activity[]>([]);
   const [summary, setSummary] = useState<Summary>({ totalLessons: 0, avgScore: 0, totalPoints: 0, dayStreak: 0, learningHours: 0 });
+  const [userProfile, setUserProfile] = useState<UserProfile>({});
+  const [showDailyReport, setShowDailyReport] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const focus = searchParams.get('focus');
@@ -117,12 +127,13 @@ export default function Progress() {
         setIsLoading(true);
         setError(null);
 
-        const [progressRes, statsRes, skillsRes, challengesRes, achievementsRes] = await Promise.allSettled([
+        const [progressRes, statsRes, skillsRes, challengesRes, achievementsRes, profileRes] = await Promise.allSettled([
           API.get('/progress'),
           dashboardService.getStats(),
           dashboardService.getSkills(),
           dashboardService.getChallenges(),
           dashboardService.getAchievements(),
+          API.get('/users/profile'),
         ]);
 
         const progressData = progressRes.status === 'fulfilled' ? progressRes.value.data : {};
@@ -134,6 +145,8 @@ export default function Progress() {
           challengesRes.status === 'fulfilled' ? (challengesRes.value.data?.challenges || []) : [];
         const dashboardAchievements: DashboardAchievement[] =
           achievementsRes.status === 'fulfilled' ? (achievementsRes.value.data?.achievements || []) : [];
+        const profile: UserProfile =
+          profileRes.status === 'fulfilled' ? (profileRes.value.data || {}) : {};
 
         let lessons: Lesson[] = progressData.lessons || [];
         let stats: StatItem[] = progressData.stats || [];
@@ -212,6 +225,7 @@ export default function Progress() {
         setWeeklyStats(stats);
         setRecentActivities(activities);
         setSummary(mergedSummary);
+        setUserProfile(profile);
 
       } catch (err: any) {
         console.error("Failed to fetch progress data:", err);
@@ -228,6 +242,38 @@ export default function Progress() {
     if (weeklyStats.length === 0) return 1;
     return Math.max(...weeklyStats.map((d) => d.lessons));
   }, [weeklyStats]);
+
+  const dailyReport = useMemo(() => {
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const today = new Date();
+    const todayIso = today.toISOString().split('T')[0];
+    const todayKey = dayNames[today.getDay()];
+
+    const todayWeeklyStat = weeklyStats.find((s) => s.day === todayKey);
+    const todayLessons = completedLessons.filter((l) => l.date === todayIso);
+
+    const lessonsCount = todayLessons.length || todayWeeklyStat?.lessons || 0;
+    const pointsToday = todayWeeklyStat?.points || todayLessons.reduce((sum, l) => sum + (l.points || 0), 0);
+    const avgAccuracy = todayLessons.length > 0
+      ? Math.round(todayLessons.reduce((sum, l) => sum + l.score, 0) / todayLessons.length)
+      : summary.avgScore;
+
+    const topLesson = [...completedLessons].sort((a, b) => b.score - a.score)[0];
+
+    const milestonesToday = recentActivities.filter((a) => {
+      const t = a.time.toLowerCase();
+      return t.includes('just now') || t.includes('min') || t.includes('hour') || t.includes('today') || t.includes('recently') || t === 'completed';
+    }).length;
+
+    return {
+      dateLabel: today.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' }),
+      lessonsCount,
+      pointsToday,
+      avgAccuracy,
+      milestonesToday,
+      topLessonTitle: topLesson?.title || 'No lesson yet',
+    };
+  }, [weeklyStats, completedLessons, recentActivities, summary.avgScore]);
 
   useEffect(() => {
     if (!focus) return;
@@ -253,6 +299,53 @@ export default function Progress() {
 
     return () => clearTimeout(timer);
   }, [focus, focusTask, isLoading]);
+
+  const handleDownloadDailyReport = () => {
+    const doc = new jsPDF();
+    const generatedAt = new Date().toLocaleString();
+
+    const userName = userProfile.fullName || 'N/A';
+    const age = userProfile.age !== undefined ? String(userProfile.age) : 'N/A';
+    const nativeLanguage = userProfile.nativeLanguage || 'N/A';
+    const level = userProfile.skillLevel ? `${userProfile.skillLevel.charAt(0).toUpperCase()}${userProfile.skillLevel.slice(1)}` : 'N/A';
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.text('Orato - Daily Learning Report', 14, 18);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.text(`Generated: ${generatedAt}`, 14, 26);
+    doc.text(`Date: ${dailyReport.dateLabel}`, 14, 32);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Student Profile', 14, 44);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Name: ${userName}`, 14, 52);
+    doc.text(`Age: ${age}`, 14, 58);
+    doc.text(`Native Language: ${nativeLanguage}`, 14, 64);
+    doc.text(`Current Level: ${level}`, 14, 70);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Daily Summary', 14, 82);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Lessons Today: ${dailyReport.lessonsCount}`, 14, 90);
+    doc.text(`Points Today: ${dailyReport.pointsToday}`, 14, 96);
+    doc.text(`Average Accuracy: ${dailyReport.avgAccuracy}%`, 14, 102);
+    doc.text(`Milestones Today: ${dailyReport.milestonesToday}`, 14, 108);
+    doc.text(`Top Lesson: ${dailyReport.topLessonTitle}`, 14, 114);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Progress Snapshot', 14, 126);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Total Lessons: ${summary.totalLessons}`, 14, 134);
+    doc.text(`Learning Hours: ${summary.learningHours}h`, 14, 140);
+    doc.text(`Day Streak: ${summary.dayStreak} days`, 14, 146);
+    doc.text(`Total Points: ${summary.totalPoints}`, 14, 152);
+
+    const fileName = `daily-report-${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(fileName);
+  };
 
   if (isLoading) {
     return (
@@ -294,11 +387,73 @@ export default function Progress() {
               Keep it up! You've learned <span className="text-green-500 font-bold">12% more</span> this week.
             </p>
           </div>
-          <button className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-5 py-2.5 rounded-xl font-semibold transition-all">
+          <button
+            onClick={() => setShowDailyReport((prev) => !prev)}
+            className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-5 py-2.5 rounded-xl font-semibold transition-all"
+          >
             <Calendar size={18} />
-            Weekly Report
+            {showDailyReport ? 'Hide Daily Report' : 'Daily Report'}
           </button>
         </div>
+
+        {showDailyReport && (
+          <div className="mb-8 rounded-2xl border border-green-200 bg-green-50 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-green-900">Daily Report</h2>
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-green-700">{dailyReport.dateLabel}</span>
+                <button
+                  onClick={handleDownloadDailyReport}
+                  className="text-xs bg-white border border-green-200 text-green-700 px-3 py-1.5 rounded-lg hover:bg-green-100 transition-all"
+                >
+                  Download PDF
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+              <div className="rounded-xl bg-white p-3 border border-green-100">
+                <p className="text-xs text-gray-500">Lessons Today</p>
+                <p className="text-lg font-bold text-gray-900">{dailyReport.lessonsCount}</p>
+              </div>
+              <div className="rounded-xl bg-white p-3 border border-green-100">
+                <p className="text-xs text-gray-500">Points Today</p>
+                <p className="text-lg font-bold text-gray-900">{dailyReport.pointsToday}</p>
+              </div>
+              <div className="rounded-xl bg-white p-3 border border-green-100">
+                <p className="text-xs text-gray-500">Avg Accuracy</p>
+                <p className="text-lg font-bold text-gray-900">{dailyReport.avgAccuracy}%</p>
+              </div>
+              <div className="rounded-xl bg-white p-3 border border-green-100">
+                <p className="text-xs text-gray-500">Milestones</p>
+                <p className="text-lg font-bold text-gray-900">{dailyReport.milestonesToday}</p>
+              </div>
+              <div className="rounded-xl bg-white p-3 border border-green-100 sm:col-span-2 lg:col-span-1">
+                <p className="text-xs text-gray-500">Top Lesson</p>
+                <p className="text-sm font-semibold text-gray-900 truncate">{dailyReport.topLessonTitle}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
+              <div className="rounded-xl bg-white p-3 border border-green-100">
+                <p className="text-xs text-gray-500">Name</p>
+                <p className="text-sm font-semibold text-gray-900 truncate">{userProfile.fullName || 'N/A'}</p>
+              </div>
+              <div className="rounded-xl bg-white p-3 border border-green-100">
+                <p className="text-xs text-gray-500">Age</p>
+                <p className="text-sm font-semibold text-gray-900">{userProfile.age ?? 'N/A'}</p>
+              </div>
+              <div className="rounded-xl bg-white p-3 border border-green-100">
+                <p className="text-xs text-gray-500">Native Language</p>
+                <p className="text-sm font-semibold text-gray-900 truncate">{userProfile.nativeLanguage || 'N/A'}</p>
+              </div>
+              <div className="rounded-xl bg-white p-3 border border-green-100">
+                <p className="text-xs text-gray-500">Current Level</p>
+                <p className="text-sm font-semibold text-gray-900 capitalize">{userProfile.skillLevel || 'N/A'}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           <StatCard 
