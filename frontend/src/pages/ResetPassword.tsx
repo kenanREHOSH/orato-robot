@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import API from "../services/api";
 import logo from "../assets/logo.png";
+import toast from "react-hot-toast";
 
 const ResetPassword = () => {
   const [otp, setOtp] = useState("");
@@ -16,7 +17,6 @@ const ResetPassword = () => {
 
   const email = searchParams.get("email");
 
-  // ===== PASSWORD VALIDATION =====
   const validatePassword = (pwd: string) => {
     const checks = {
       length: pwd.length >= 6,
@@ -26,7 +26,7 @@ const ResetPassword = () => {
     };
 
     const strength = Object.values(checks).filter(Boolean).length;
-    
+
     return {
       checks,
       strength,
@@ -38,7 +38,7 @@ const ResetPassword = () => {
 
   const getStrengthInfo = () => {
     if (password.length === 0) return { label: "", color: "" };
-    
+
     if (passwordValidation.strength <= 2) {
       return { label: "Weak", color: "text-red-600 bg-red-100 border-red-300" };
     } else if (passwordValidation.strength === 3) {
@@ -54,45 +54,44 @@ const ResetPassword = () => {
     e.preventDefault();
 
     if (!otp || otp.length !== 6) {
-      alert("Please enter a valid 6-digit OTP!");
+      toast.error("Please enter a valid 6-digit OTP!");
       return;
     }
 
-    // PASSWORD STRENGTH VALIDATION
     if (!passwordValidation.isValid) {
-      alert("Password must include:\n- At least 6 characters\n- One uppercase letter\n- One lowercase letter\n- One special character");
+      toast.error("Password must include uppercase, lowercase, special character & 6+ chars");
       return;
     }
 
     if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+      toast.error("Passwords do not match!");
       return;
     }
 
     if (!email) {
-      alert("Email is missing! Please go back and try again.");
+      toast.error("Email is missing! Please go back and try again.");
       return;
     }
 
     setLoading(true);
 
     try {
-      const res = await API.post("/auth/reset-password", {
+      const res = await API.post("/otp/reset-password", {
         email,
         otp,
-        newPassword: password,
+        password,
       });
 
-      alert(res.data.message || "Password reset successful!");
-      navigate("/signin");
+      toast.success(res.data.message || "Password reset successfully!");
+      setTimeout(() => navigate("/signin"), 1500);
 
     } catch (error: any) {
       console.error("Reset password error:", error);
 
       if (error.response) {
-        alert(error.response.data.message || "Failed to reset password!");
+        toast.error(error.response.data.message || "Failed to reset password!");
       } else {
-        alert("Failed to reset password. Please try again.");
+        toast.error("Failed to reset password. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -140,7 +139,7 @@ const ResetPassword = () => {
             />
           </div>
 
-          {/* New Password with Strength */}
+          {/* New Password */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               New Password
