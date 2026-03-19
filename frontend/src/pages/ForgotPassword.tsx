@@ -12,7 +12,6 @@ const ForgotPassword = () => {
   const [otpSent, setOtpSent] = useState(false);
   const navigate = useNavigate();
 
-  // Countdown timer
   useEffect(() => {
     if (cooldown > 0) {
       const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
@@ -27,7 +26,8 @@ const ForgotPassword = () => {
     setError("");
 
     try {
-      const res = await API.post("/auth/forgot-password-otp", { email });
+      // FIXED: changed from /auth/forgot-password-otp to /otp/forgot-password
+      const res = await API.post("/otp/forgot-password", { email });
 
       setMessage(res.data.message || "OTP sent to your email!");
       setOtpSent(true);
@@ -89,13 +89,14 @@ const ForgotPassword = () => {
             onChange={(e) => setEmail(e.target.value)}
             required
             disabled={loading || cooldown > 0}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400"
           />
 
           <button
             type="submit"
             disabled={loading || cooldown > 0}
-            className="w-full py-3 rounded-lg text-white bg-gradient-to-r from-green-500 to-emerald-600"
+            className={`w-full py-3 rounded-lg text-white font-semibold bg-gradient-to-r from-green-500 to-emerald-600 transition-all
+              ${loading || cooldown > 0 ? "opacity-50 cursor-not-allowed" : "hover:from-green-600 hover:to-emerald-700 hover:shadow-lg"}`}
           >
             {loading
               ? "Sending..."
@@ -110,7 +111,7 @@ const ForgotPassword = () => {
         {otpSent && (
           <button
             onClick={handleProceed}
-            className="w-full mt-4 py-3 rounded-lg text-green-600 font-semibold border-2 border-green-600"
+            className="w-full mt-4 py-3 rounded-lg text-green-600 font-semibold border-2 border-green-600 hover:bg-green-50 transition-all"
           >
             I have received the OTP →
           </button>

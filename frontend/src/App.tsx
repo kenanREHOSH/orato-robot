@@ -15,14 +15,16 @@ import AssessmentResults from "./pages/AssessmentResults";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import GoogleCallback from "./pages/GoogleCallback";
-import Quiz from "./pages/Quiz";
-import QuizDetail from "./pages/QuizDetail";
 import ListeningQuiz from "./pages/ListeningQuiz";
 import ListeningDetail from "./pages/ListeningDetail";
 import ReadingTask from "./pages/ReadingTask";
 import ReadingDetail from "./pages/ReadingDetail";
+import VocabularyTask from "./pages/VocabularyTask";
+import VocabularyDetail from "./pages/VocabularyDetail";
 import VisualCardsPage from "./pages/VisualCardsPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import GrammarLevels from "./pages/GrammarLevels";
+import GrammarQuiz from "./pages/GrammarQuiz";
 
 import { Toaster } from "react-hot-toast";
 
@@ -53,10 +55,6 @@ function App() {
           <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
           <Route path="/setting" element={<ProtectedRoute><Setting /></ProtectedRoute>} />
           
-          {/* Quiz Routes */}
-          <Route path="/quiz" element={<Quiz />} />
-          <Route path="/quiz/:id" element={<QuizDetail />} />
-
           {/* Listening Routes */}
           <Route 
             path="/listening" 
@@ -71,6 +69,23 @@ function App() {
             element={
               <ProtectedRoute>
                 <ListeningDetail />
+              </ProtectedRoute>
+            } 
+          />
+          {/* Grammar Quiz Routes */}
+          <Route 
+            path="/grammar" 
+            element={
+              <ProtectedRoute>
+                <GrammarLevels />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/grammar/:level" 
+            element={
+              <ProtectedRoute>
+                <GrammarQuiz />
               </ProtectedRoute>
             } 
           />
@@ -94,6 +109,8 @@ function App() {
             </ProtectedRoute>
             }
           />
+          <Route path="/vocabulary" element={<ProtectedRoute><VocabularyTask /></ProtectedRoute>} />
+          <Route path="/vocabulary/:id" element={<ProtectedRoute><VocabularyDetail /></ProtectedRoute>} />
 
           {/* 404 Not Found */}
           <Route

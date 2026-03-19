@@ -1,6 +1,8 @@
 import ListeningContent from '../models/listeningContent.js';
 import ListeningProgress from '../models/listeningProgress.js';
 import User from '../models/user.js';
+import { checkAndUpgradeLevel } from '../services/progressService.js';
+import { updateUserStats } from '../services/statsService.js';
 
 const levelRanks = {
   beginner: 0,
@@ -16,17 +18,9 @@ export const getAllListeningContent = async (req, res) => {
   try {
     const userId = req.user._id;
     const userRoleLevel = req.user.skillLevel || 'beginner';
-    const requestedLevel = req.query.level || userRoleLevel;
+    const requestedLevel = userRoleLevel; // Strictly use user's current level
 
-    // Check if user is trying to access a level higher than their current skill level
-    if (levelRanks[requestedLevel] > levelRanks[userRoleLevel]) {
-      return res.status(403).json({
-        status: 'error',
-        message: `Your account level is ${userRoleLevel}. Complete this level to unlock ${requestedLevel}.`
-      });
-    }
-
-    // Get all items for the requested level, sorted by order
+    // Get all items for the user's current level, sorted by order
     const items = await ListeningContent.find({ level: requestedLevel })
       .select('-questions.correctAnswer')
       .sort({ order: 1 });
@@ -193,6 +187,10 @@ export const submitListeningAnswers = async (req, res) => {
 
     const allCorrect = correctCount === 3;
 
+    // Check if was previously completed
+    const existingProgress = await ListeningProgress.findOne({ userId, contentId: item._id });
+    const wasCompleted = existingProgress ? existingProgress.completed : false;
+
     // Update or create progress
     const progress = await ListeningProgress.findOneAndUpdate(
       { userId, contentId: item._id },
@@ -200,12 +198,23 @@ export const submitListeningAnswers = async (req, res) => {
         $set: {
           completed: allCorrect,
           correctAnswers: correctCount,
+          level: item.level, // Ensure level is saved
+          order: item.order, // Ensure order is saved
           ...(allCorrect ? { completedAt: new Date() } : {})
         },
         $inc: { attempts: 1 }
       },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: 'after' }
     );
+
+    // Increment global stats if newly completed
+    if (allCorrect && !wasCompleted) {
+      try {
+        await updateUserStats(userId, 50); // 50 points for listening
+      } catch (err) {
+        console.error('Failed to update user stats:', err);
+      }
+    }
 
     // Check if next item exists and is now unlocked
     let nextItemUnlocked = false;
@@ -219,16 +228,12 @@ export const submitListeningAnswers = async (req, res) => {
 
       if (nextItem) {
         nextItemUnlocked = true;
-      } else if (item.order === 10) {
-        // If it was the 10th item and no next item in this level -> LEVEL UP
-        const currentRank = levelRanks[item.level];
-        if (currentRank < 2) {
-          const newLevel = Object.keys(levelRanks).find(key => levelRanks[key] === currentRank + 1);
-          if (newLevel) {
-            await User.findByIdAndUpdate(userId, { skillLevel: newLevel });
-            levelUpgraded = true;
-          }
-        }
+      }
+      
+      // Call unified level upgrade check
+      const upgradeResult = await checkAndUpgradeLevel(userId);
+      if (upgradeResult.upgraded) {
+        levelUpgraded = true;
       }
     }
 

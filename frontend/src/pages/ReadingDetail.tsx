@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { Loader2, ArrowLeft, CheckCircle, XCircle } from "lucide-react";
 import API from "../services/api";
+import { dashboardService } from "../services/dashboardService";
 
 interface Question {
   _id: string;
@@ -97,6 +98,12 @@ export default function ReadingDetail() {
       const res = await API.post(`/reading/${id}/submit`, { answers: payload });
       setResult(res.data);
       window.scrollTo({ top: 0, behavior: "smooth" });
+      
+      try {
+        await dashboardService.updateChallenge('reading');
+      } catch (e) {
+        console.error('Failed to update challenge:', e);
+      }
     } catch (err: any) {
       if (err.response?.data?.message === "Already completed") {
         alert("You have already completed this task!");

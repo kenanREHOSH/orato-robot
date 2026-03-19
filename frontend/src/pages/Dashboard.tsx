@@ -12,15 +12,22 @@ import DailyChallenges from "../components/DailyChallenges";
 import SkillProgress from "../components/SkillProgress";
 import RecentAchievements from "../components/RecentAchievements";
 import SpeakingCoach from "../components/SpeakingCoach";
+import VisualVocabularyBanner from "../components/VisualVocabularyBanner";
 
 const Dashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const mainRef = useRef<HTMLElement>(null);
   const navigate = useNavigate();
 
-  const handleLessonClick = (_lessonId: number, lessonTitle: string) => {
-    if (lessonTitle === 'Visual Vocabulary Cards') {
-      navigate('/visual-cards');
+  const handleLessonClick = (_lessonId: string | number, lessonTitle: string) => {
+    if (lessonTitle === 'Listening Lab' || lessonTitle === 'English Pronunciation Basics') {
+      navigate('/listening');
+    } else if (lessonTitle === 'Reading Tasks') {
+      navigate('/reading');
+    } else if (lessonTitle === 'Grammar Practice' || lessonTitle === 'Take a Quiz') {
+      navigate('/grammar');
+    } else if (lessonTitle === 'English Vocabulary: Daily Life') {
+      navigate('/quiz?filter=Vocabulary');
     }
   };
 
@@ -42,7 +49,7 @@ const Dashboard: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8FAFC] text-gray-900">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-green-50 text-gray-900">
         <Loader2 className="w-12 h-12 text-green-500 animate-spin mb-4" />
         <h2 className="text-xl font-semibold">Loading dashboard...</h2>
       </div>
@@ -50,7 +57,7 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="page-wrapper flex flex-col min-h-screen bg-[#F8FAFC] text-gray-900">
+    <div className="page-wrapper flex flex-col min-h-screen bg-green-50 text-gray-900">
       <Navbar />
 
       <div className="flex flex-1">
@@ -61,18 +68,33 @@ const Dashboard: React.FC = () => {
             <StatsGrid />
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <div className="xl:col-span-2 space-y-6">
-              <ContinueLearning onLessonClick={handleLessonClick} />
-              <DailyChallenges />
+          <div className="mb-6">
+            <ContinueLearning onLessonClick={handleLessonClick} />
+          </div>
 
-              {/* ✅ Speaking Coach Feature */}
-              <SpeakingCoach />
+          <div className="space-y-6">
+            {/* Middle Row Grid: Daily Challenges & Progress */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Left Column */}
+              <div className="md:col-span-2 lg:col-span-2">
+                <DailyChallenges />
+              </div>
+
+              {/* Right Column */}
+              <div className="md:col-span-2 lg:col-span-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
+                <SkillProgress />
+                <RecentAchievements />
+              </div>
             </div>
 
-            <div className="space-y-6">
-              <SkillProgress />
-              <RecentAchievements />
+            {/* Speaking Coach & Vocabulary Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="md:col-span-2 lg:col-span-2">
+                <SpeakingCoach />
+              </div>
+              <div className="md:col-span-2 lg:col-span-1">
+                <VisualVocabularyBanner />
+              </div>
             </div>
           </div>
         </main>

@@ -1,5 +1,8 @@
 import ReadingContent from "../models/readingContent.js";
 import ReadingProgress from "../models/readingProgress.js";
+import { checkAndUpgradeLevel } from "../services/progressService.js";
+import { updateUserStats } from "../services/statsService.js";
+import User from "../models/user.js";
 
 // GET /api/reading — get all tasks for user's level
 export const getAllReadingContent = async (req, res) => {
@@ -143,6 +146,18 @@ export const submitReadingAnswers = async (req, res) => {
         note: "Writing submitted successfully!",
       };
     });
+    // Update user stats
+    try {
+      // 50 points for reading task completion
+      await updateUserStats(user._id, 50);
+    } catch (err) {
+      console.error('Failed to update user stats:', err);
+    }
+
+    // Check for level upgrade
+    const upgradeResult = await checkAndUpgradeLevel(user._id);
+    let levelUpgraded = upgradeResult.upgraded;
+    let newLevel = upgradeResult.newLevel;
 
     res.json({
       success: true,
@@ -150,6 +165,8 @@ export const submitReadingAnswers = async (req, res) => {
       correctMcq,
       totalMcq,
       feedback,
+      levelUpgraded,
+      newLevel,
       message:
         score >= 60
           ? "Great job! Next task unlocked! 🎉"

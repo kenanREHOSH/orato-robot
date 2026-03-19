@@ -2,12 +2,12 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import API from "../services/api";
 import logo from "../assets/logo.png";
+import toast from "react-hot-toast";
 
 const AssessmentResults = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Get all user data including assessment results
   const userData = location.state || {};
 
   const [loading, setLoading] = useState(false);
@@ -28,7 +28,6 @@ const AssessmentResults = () => {
     skillLevel = "beginner",
   } = userData;
 
-  // Get skill level details
   const getSkillLevelInfo = () => {
     switch (skillLevel) {
       case "beginner":
@@ -70,18 +69,10 @@ const AssessmentResults = () => {
       setError("");
 
       console.log("Creating account with data:", {
-        fullName,
-        email,
-        age,
-        nativeLanguage,
-        targetLanguage,
-        learningGoal,
-        dailyGoalMinutes,
-        skillLevel,
-        assessmentScore,
+        fullName, email, age, nativeLanguage, targetLanguage,
+        learningGoal, dailyGoalMinutes, skillLevel, assessmentScore,
       });
 
-      // Create account with all collected data
       const res = await API.post("/auth/signup", {
         fullName,
         email,
@@ -98,27 +89,27 @@ const AssessmentResults = () => {
 
       console.log("✅ Account created:", res.data);
 
-      // Store token and user data
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", JSON.stringify(res.data.user));
       }
 
-      // Show success message briefly
-      alert("🎉 Account created successfully! Welcome to Orato!");
+      // FIXED: replaced alert() with toast
+      toast.success("Account created successfully! Welcome to Orato! ");
 
-      // Navigate to dashboard
       setTimeout(() => {
-        navigate("/dashboard");
-      }, 500);
+        navigate("/");
+      }, 1500);
 
     } catch (error: any) {
       console.error("❌ Account creation error:", error);
 
       if (error.response?.data?.message) {
         setError(error.response.data.message);
+        toast.error(error.response.data.message);
       } else {
         setError("Failed to create account. Please try again.");
+        toast.error("Failed to create account. Please try again.");
       }
 
       setLoading(false);
@@ -136,7 +127,6 @@ const AssessmentResults = () => {
 
         {/* Congratulations */}
         <div className="text-center mb-8">
-          <div className="text-6xl mb-4">🎉</div>
           <h2 className="text-3xl font-bold text-gray-800 mb-2">
             Assessment Complete!
           </h2>
@@ -156,10 +146,11 @@ const AssessmentResults = () => {
             </div>
 
             {/* Skill Level Badge */}
-            <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-lg font-semibold ${skillInfo.color === 'green' ? 'bg-green-100 text-green-700 border-2 border-green-300' :
+            <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-lg font-semibold ${
+              skillInfo.color === 'green' ? 'bg-green-100 text-green-700 border-2 border-green-300' :
               skillInfo.color === 'yellow' ? 'bg-yellow-100 text-yellow-700 border-2 border-yellow-300' :
-                'bg-red-100 text-red-700 border-2 border-red-300'
-              }`}>
+              'bg-red-100 text-red-700 border-2 border-red-300'
+            }`}>
               <span className="text-2xl">{skillInfo.emoji}</span>
               <span>{skillInfo.title} Level</span>
             </div>
@@ -209,10 +200,11 @@ const AssessmentResults = () => {
         <button
           onClick={handleCreateAccount}
           disabled={loading}
-          className={`w-full py-4 rounded-lg text-white font-bold text-lg transition-all shadow-lg hover:shadow-xl ${loading
-            ? 'bg-gray-400 cursor-not-allowed'
-            : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700'
-            }`}
+          className={`w-full py-4 rounded-lg text-white font-bold text-lg transition-all shadow-lg hover:shadow-xl ${
+            loading
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700'
+          }`}
         >
           {loading ? (
             <span className="flex items-center justify-center gap-2">

@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-dotenv.config();
+dotenv.config(); 
 
 console.log("Cloud name:", process.env.CLOUDINARY_CLOUD_NAME); // profile picture 
 console.log("API key:", process.env.CLOUDINARY_API_KEY);
@@ -23,9 +23,12 @@ import chatRoutes from "./routes/chat-routes.js";
 import { verifyEmailConfig } from "./services/emailService.js";
 import protect from "./middleware/authMiddleware.js";
 import dashboardRoutes from "./routes/dashboard-routes.js";
-import quizRoutes from "./routes/quiz-routes.js"
 import listeningRoutes from "./routes/listening-routes.js"
 import readingRoutes from "./routes/reading-routes.js"
+import vocabularyRoutes from "./routes/vocabulary-routes.js"
+import grammarRoutes from "./routes/grammar-routes.js"
+import speakingCoachRoutes from "./routes/speakingCoachRoutes.js"
+import { initCronJobs } from "./services/cronJobs.js";
 
 console.log("Cloudinary Key:", process.env.CLOUDINARY_API_KEY);
 
@@ -68,7 +71,6 @@ connectDB();
 verifyEmailConfig();
 
 // Initialize Cron Jobs
-import { initCronJobs } from "./services/cronJobs.js";
 initCronJobs();
 
 // ROUTES
@@ -81,9 +83,11 @@ app.use("/api/progress", progressRoutes);
 app.use("/api/cards", cardRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/quiz", quizRoutes);
 app.use("/api/listening", listeningRoutes);
 app.use("/api/reading", readingRoutes);
+app.use("/api/vocabulary", vocabularyRoutes);
+app.use("/api/grammar", grammarRoutes);
+app.use("/api/speaking-coach", speakingCoachRoutes);
 
 // Protected route test
 app.get("/api/protected", protect, (req, res) => {

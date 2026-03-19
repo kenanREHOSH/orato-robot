@@ -1,6 +1,5 @@
 import Lesson from '../models/lesson.js';
 import Achievement from '../models/achievement.js';
-import QuizResult from '../models/quizResult.js';
 import User from '../models/user.js';
 
 // Helper: get relative time string
@@ -43,26 +42,6 @@ export const getProgress = async (req, res) => {
       duration: `${l.totalTime || 0} min`,
       points: (i + 1) * 50,
     }));
-
-    // Also include quiz results as completed lessons
-    const quizResults = await QuizResult.find({ userId })
-      .sort({ completedAt: -1 })
-      .limit(10)
-      .populate('quizId', 'title');
-
-    quizResults.forEach((qr) => {
-      lessons.push({
-        id: qr._id,
-        title: qr.quizId?.title || 'Quiz',
-        language: 'English',
-        icon: '📝',
-        date: qr.completedAt ? new Date(qr.completedAt).toISOString().split('T')[0] : '',
-        time: qr.completedAt ? new Date(qr.completedAt).toTimeString().slice(0, 5) : '',
-        score: qr.totalQuestions > 0 ? Math.round((qr.correctAnswers / qr.totalQuestions) * 100) : 0,
-        duration: qr.timeTaken ? `${Math.ceil(qr.timeTaken / 60)} min` : '0 min',
-        points: qr.pointsEarned || 0,
-      });
-    });
 
     // Sort combined lessons by date descending
     lessons.sort((a, b) => new Date(b.date) - new Date(a.date));
