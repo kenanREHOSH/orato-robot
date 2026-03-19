@@ -43,12 +43,12 @@ const VisualCards: React.FC = () => {
 
   // 3. Audio Pronunciation Feature (Using Browser Native Speech Synthesis)
   const playAudio = (e: React.MouseEvent, wordToSpeak: string) => {
-    e.stopPropagation(); // Prevents the card from flipping back over when clicking the button
+    e.stopPropagation();
 
     if ('speechSynthesis' in window) {
       const utterance = new SpeechSynthesisUtterance(wordToSpeak);
-      utterance.lang = 'en-US'; // Set to American English
-      utterance.rate = 0.9;     // Slightly slower for learners
+      utterance.lang = 'en-US';
+      utterance.rate = 0.9;
       window.speechSynthesis.speak(utterance);
     } else {
       alert("Sorry, your browser doesn't support text-to-speech!");
@@ -61,14 +61,12 @@ const VisualCards: React.FC = () => {
   };
 
   const handleNextCard = () => {
-    setIsFlipped(false); // Reset flip state for the next card
+    setIsFlipped(false);
 
-    // Wait for the flip animation to finish before changing the content
     setTimeout(() => {
       if (currentIndex < cards.length - 1) {
         setCurrentIndex(currentIndex + 1);
       } else {
-        // Deck finished, fetch a new random batch and reset to index 0
         setCurrentIndex(0);
         fetchRandomCards();
       }
@@ -101,9 +99,12 @@ const VisualCards: React.FC = () => {
           {/* FRONT OF CARD: Image Only */}
           <div className="absolute w-full h-full [backface-visibility:hidden] rounded-2xl shadow-lg flex flex-col justify-center items-center p-5 overflow-hidden bg-white">
             <img
-              src={currentCard.imageUrl}
+              src={currentImageSrc}
               alt={currentCard.word}
               className="w-full h-4/5 object-cover rounded-lg mb-2.5"
+              onError={() =>
+                setFailedImages((prev) => ({ ...prev, [currentCard._id]: true }))
+              }
             />
             <p className="text-gray-400 text-sm m-0 uppercase tracking-wide">
               Click card to reveal meaning
