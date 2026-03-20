@@ -1,29 +1,56 @@
-## Project Overview
+🌟 Orato – AI-Powered Language Learning Platform
 
-Orato is an AI-powered Multi Language training platform designed to help users improve their public speaking and communication skills.
+ Overview
 
-The system allows users to practice presentations while receiving intelligent feedback on their performance. By combining speech analysis, user interaction, and performance tracking, Orato helps users gradually develop confidence and effective speaking habits.
+Orato is an AI-powered language learning platform designed primarily for beginners, while still supporting learners at intermediate and advanced levels.
 
-### What the System Does
+The platform focuses on building strong communication skills by combining interactive practice, AI feedback, and structured learning methods. Users can develop their language abilities step by step in a supportive and adaptive environment.
 
-- User Authentication  
-  Users can create accounts, log in, and manage their profiles.
+ Key Features
 
-- Language Training  
-  Users can practice main 4 skills using various training sessions to improve their language skills.
+Orato includes the following core features:
+User Authentication – Secure registration, login, and profile management
+Comprehensive Language Learning – Practice all essential language skills:
 
-- AI Feedback  
-  The system analyzes speech and provides feedback that helps users understand how to improve.
+Reading – Improve understanding through guided reading exercises
+Listening – Develop comprehension with audio-based activities
+Speaking – Practice pronunciation and presentations
+Grammar Practice – Learn correct sentence structure and rules
+Vocabulary Building – Expand word knowledge with contextual learning
+AI-Powered Feedback – Get intelligent feedback on speaking and performance to identify strengths and areas for improvement
+Progress Tracking – Monitor learning progress with stored session data and performance insights
+Personalized Goals – Set daily learning targets and track achievements
+Beginner-Friendly Design – Simple and intuitive interface designed especially for new learners
+Scalable Learning – Suitable for beginners, while adaptable for higher-level users
+Profile Management – Update personal details and manage user profiles
 
-- Progress Tracking  
-  Users can track their improvement through stored session data and performance metrics.
+ Purpose of the System
 
-- Personalized Goals  
-  Users can set learning goals such as daily practice time and language targets.
+The goal of Orato is to:
+Help beginners build a strong foundation in language learning
+Provide a structured and interactive learning experience
+Support users in improving communication skills for education, career, and daily life
+Enable continuous improvement through AI-driven feedback and progress tracking
 
-- Profile Management  
-  Users can update their profile, upload a profile picture, and manage personal information.
+🏗️ Tech Stack
 
-### Purpose of the System
+Frontend:
 
-The goal of Orato is to create an interactive environment where users can continuously practice speaking and receive useful feedback, helping them become better presenters over time.
+React.js
+Tailwind CSS
+
+Backend:
+
+Node.js (Express.js)
+MongoDB
+
+Other Technologies:
+
+AI APIs – for speech analysis and feedback
+WebSocket – for real-time interactions
+Email Services – for notifications and reminders
+
+💻 Run Commands
+
+1. Clone the Repository
+git clone <https://github.com/Anjana-1234/orato>
