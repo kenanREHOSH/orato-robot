@@ -38,7 +38,13 @@ const app = express();
 // MIDDLEWARE 
 
 // CORS
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    process.env.FRONTEND_URL  //  Choreo frontend URL
+  ],
+  credentials: true
+}));
 
 // Body parsers
 app.use(express.json());
