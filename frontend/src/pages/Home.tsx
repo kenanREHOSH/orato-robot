@@ -6,7 +6,7 @@ import welcomeBg from "../assets/welcome-bg.jpg";
 import ctaImage from "../assets/cta-image.jpg";
 
 const Home = () => {
-  const isLandingPageMode = false; // Set to true for marketing landing page mode
+  const isLandingPageMode = window.config.isLandingPageMode; // Set to true for marketing landing page mode
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Check if user is logged in
