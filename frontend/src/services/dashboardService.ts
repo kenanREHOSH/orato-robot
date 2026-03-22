@@ -2,7 +2,7 @@ const getBaseUrl = () => {
   if (typeof window !== 'undefined' && window.config?.backendUrl) {
     return window.config.backendUrl;
   }
-  return 'http://localhost:5002/api';
+  return '${window.config.backendUrl}';
 };
 
 const BASE_URL = `${getBaseUrl()}/dashboard`;

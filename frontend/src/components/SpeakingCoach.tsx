@@ -84,7 +84,7 @@ function SpeakingCoach() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5002/api/speaking-coach/chat", {
+      const res = await fetch(`${window.config.backendUrl}/speaking-coach/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

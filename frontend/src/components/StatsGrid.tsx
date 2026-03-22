@@ -118,7 +118,7 @@ export default function StatsGrid() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch("http://localhost:5002/api/dashboard/stats", {
+        const res = await fetch(`${window.config.backendUrl}/dashboard/stats`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: "Bearer " + localStorage.getItem("token"),

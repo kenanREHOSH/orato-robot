@@ -2,7 +2,7 @@ const fetch = require('node-fetch');
 
 async function test() {
   try {
-    const res = await fetch('http://localhost:5002/api/speaking-coach/chat', {
+    const res = await fetch(`${process.env.BACKEND_URL}/speaking-coach/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: 'Hello coach!' })
