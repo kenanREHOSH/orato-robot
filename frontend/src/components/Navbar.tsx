@@ -42,6 +42,8 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn: propIsLoggedIn }) => {
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
+  // Changed breakpoint from md (768px) to lg (1024px) so the hamburger menu
+  // is used on tablets too, preventing the cramped navbar issue
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `font-medium transition-all duration-200 py-2 px-4 block no-underline rounded-lg
      hover:bg-green-100 hover:scale-105 hover:shadow-md
@@ -53,8 +55,8 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn: propIsLoggedIn }) => {
         <div className="px-4 sm:px-8 py-4">
           <div className="flex justify-between items-center">
 
-            {/* Logo */}
-            <div className="flex items-center">
+            {/* Logo — always fully visible */}
+            <div className="flex items-center flex-shrink-0">
               <Link
                 to="/"
                 className="flex items-center gap-3 no-underline"
@@ -63,14 +65,17 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn: propIsLoggedIn }) => {
                 <img
                   src={logo}
                   alt="Orato Logo"
-                  className="w-14 h-14 rounded-xl shadow-md object-cover"
+                  className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl shadow-md object-cover flex-shrink-0"
                 />
-                <span className="text-2xl sm:text-3xl font-bold text-green-600">Orato</span>
+                {/* Always show brand name — never hidden */}
+                <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600 whitespace-nowrap">
+                  Orato
+                </span>
               </Link>
             </div>
 
-            {/* Desktop Navigation */}
-            <ul className="hidden md:flex md:items-center md:gap-6">
+            {/* Desktop Navigation — only shown on lg+ (1024px+) */}
+            <ul className="hidden lg:flex lg:items-center lg:gap-4 xl:gap-6">
               <li>
                 <NavLink to="/" className={navLinkClass} onClick={closeMobileMenu}>
                   Home
@@ -99,12 +104,13 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn: propIsLoggedIn }) => {
             </ul>
 
             {/* Right Section */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              {/* Login / Avatar — shown on lg+ only alongside desktop nav */}
               {isLoggedIn ? (
                 <NavLink
                   to="/account"
                   className={({ isActive }) =>
-                    `flex items-center gap-2 py-2 px-4 rounded-lg transition-all duration-200 no-underline
+                    `flex items-center gap-2 py-2 px-3 rounded-lg transition-all duration-200 no-underline
                      hover:bg-green-100 hover:scale-105 hover:shadow-md
                      ${isActive ? "text-green-600 font-semibold bg-green-50" : "text-gray-700"}`
                   }
@@ -114,43 +120,44 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn: propIsLoggedIn }) => {
                     <img
                       src={userAvatar}
                       alt="profile"
-                      className="w-9 h-9 rounded-full object-cover border-2 border-green-500"
+                      className="w-9 h-9 rounded-full object-cover border-2 border-green-500 flex-shrink-0"
                     />
                   ) : (
-                    <div className="w-9 h-9 rounded-full bg-green-500 flex items-center justify-center text-white text-sm font-semibold border-2 border-green-500 shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-green-500 flex items-center justify-center text-white text-sm font-semibold border-2 border-green-500 flex-shrink-0">
                       {userInitials}
                     </div>
                   )}
-                  <span className="font-semibold hidden md:inline">
+                  <span className="font-semibold hidden lg:inline whitespace-nowrap">
                     {userName}
                   </span>
                 </NavLink>
               ) : (
                 <Link
                   to="/signin"
-                  className="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-xl font-bold text-base transition shadow-md hover:shadow-lg no-underline hidden md:block"
+                  className="bg-green-500 hover:bg-green-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm lg:text-base transition shadow-md hover:shadow-lg no-underline hidden lg:block whitespace-nowrap"
                   onClick={closeMobileMenu}
                 >
                   Login
                 </Link>
               )}
 
-              {/* Hamburger Menu */}
+              {/* Hamburger — shown below lg (i.e. mobile + tablet) */}
               <div
-                className="md:hidden flex flex-col gap-1 cursor-pointer z-50"
+                className="lg:hidden flex flex-col gap-1.5 cursor-pointer z-50 p-1"
                 onClick={toggleMobileMenu}
+                aria-label="Toggle menu"
               >
-                <span className={`w-6 h-0.5 bg-gray-700 transition-all duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
-                <span className={`w-6 h-0.5 bg-gray-700 transition-all duration-300 ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
-                <span className={`w-6 h-0.5 bg-gray-700 transition-all duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
+                <span className={`w-6 h-0.5 bg-gray-700 transition-all duration-300 origin-center ${isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
+                <span className={`w-6 h-0.5 bg-gray-700 transition-all duration-300 ${isMobileMenuOpen ? 'opacity-0 scale-x-0' : ''}`}></span>
+                <span className={`w-6 h-0.5 bg-gray-700 transition-all duration-300 origin-center ${isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
               </div>
             </div>
           </div>
         </div>
 
-        {/*  Mobile Menu - FIXED */}
+        {/* Mobile / Tablet Menu — shown below lg */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-green-100 flex flex-col gap-2 p-6 bg-white/95 backdrop-blur-md rounded-b-2xl animate-fade-in-down">
+          <div className="lg:hidden border-t border-green-100 flex flex-col gap-2 p-6 bg-white/95 backdrop-blur-md rounded-b-2xl animate-fade-in-down">
             <NavLink to="/" className={navLinkClass} onClick={closeMobileMenu}>
               Home
             </NavLink>
@@ -167,8 +174,31 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn: propIsLoggedIn }) => {
               About Us
             </NavLink>
 
-            {/* Login button in mobile menu */}
-            {!isLoggedIn && (
+            {/* Avatar or Login in mobile/tablet menu */}
+            {isLoggedIn ? (
+              <NavLink
+                to="/account"
+                className={({ isActive }) =>
+                  `flex items-center gap-3 py-2 px-4 rounded-lg transition-all duration-200 no-underline mt-2
+                   hover:bg-green-100
+                   ${isActive ? "text-green-600 font-semibold bg-green-50" : "text-gray-700"}`
+                }
+                onClick={closeMobileMenu}
+              >
+                {userAvatar ? (
+                  <img
+                    src={userAvatar}
+                    alt="profile"
+                    className="w-9 h-9 rounded-full object-cover border-2 border-green-500"
+                  />
+                ) : (
+                  <div className="w-9 h-9 rounded-full bg-green-500 flex items-center justify-center text-white text-sm font-semibold border-2 border-green-500">
+                    {userInitials}
+                  </div>
+                )}
+                <span className="font-semibold">{userName}</span>
+              </NavLink>
+            ) : (
               <Link
                 to="/signin"
                 className="mt-2 bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-bold text-base transition shadow-md text-center no-underline"

@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { gsap } from "gsap";
 import { Loader2 } from "lucide-react";
+import { FaArrowUp } from 'react-icons/fa';
 
 import Header from "../components/Header";
 import StatsGrid from "../components/StatsGrid";
@@ -16,6 +17,7 @@ import VisualVocabularyBanner from "../components/VisualVocabularyBanner";
 
 const Dashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
   const navigate = useNavigate();
 
@@ -47,6 +49,18 @@ const Dashboard: React.FC = () => {
     }
   }, [isLoading]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-green-50 text-gray-900">
@@ -73,21 +87,15 @@ const Dashboard: React.FC = () => {
           </div>
 
           <div className="space-y-6">
-            {/* Middle Row Grid: Daily Challenges & Progress */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Left Column */}
               <div className="md:col-span-2 lg:col-span-2">
                 <DailyChallenges />
               </div>
-
-              {/* Right Column */}
               <div className="md:col-span-2 lg:col-span-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
                 <SkillProgress />
                 <RecentAchievements />
               </div>
             </div>
-
-            {/* Speaking Coach & Vocabulary Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="md:col-span-2 lg:col-span-2">
                 <SpeakingCoach />
@@ -101,6 +109,23 @@ const Dashboard: React.FC = () => {
       </div>
 
       <Footer />
+
+      {/* Scroll to Top Button */}
+      <button
+        onClick={scrollToTop}
+        className={`fixed bottom-8 right-8 p-4 rounded-2xl bg-[#1a9e6b] text-white shadow-[0_10px_30px_rgba(26,158,107,0.3)] hover:bg-[#14c781] hover:scale-110 active:scale-95 transition-all duration-500 z-50 group ${
+          showScrollTop ? 'translate-y-0 opacity-100 visible' : 'translate-y-20 opacity-0 invisible'
+        }`}
+        aria-label="Scroll to top"
+      >
+        <span className="flex items-center justify-center group-hover:-translate-y-1 transition-transform duration-300">
+          <FaArrowUp size={20} />
+        </span>
+        <span className="absolute -top-12 left-1/2 -translate-x-1/2 bg-[#0d2d2a] text-white text-xs py-2 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap">
+          Back to Top
+          <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-x-4 border-x-transparent border-t-4 border-t-[#0d2d2a]"></span>
+        </span>
+      </button>
     </div>
   );
 };

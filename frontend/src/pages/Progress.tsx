@@ -1,17 +1,18 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import Navbar from "../components/Navbar"; // Correct import statement
-import Footer from '../components/Footer'; // Correct import statement for Footer
+import Navbar from "../components/Navbar";
+import Footer from '../components/Footer';
+import { FaArrowUp } from 'react-icons/fa';
 import jsPDF from 'jspdf';
 
-import { 
-  Calendar, 
-  BookOpen, 
-  Trophy, 
-  Clock, 
-  Star, 
+import {
+  Calendar,
+  BookOpen,
+  Trophy,
+  Clock,
+  Star,
   TrendingUp,
-  Loader2 // Added for loading state
+  Loader2
 } from 'lucide-react';
 import API from '../services/api';
 import { dashboardService } from '../services/dashboardService';
@@ -80,6 +81,14 @@ interface UserProfile {
   skillLevel?: string;
 }
 
+interface Summary {
+  totalLessons: number;
+  avgScore: number;
+  totalPoints: number;
+  dayStreak: number;
+  learningHours: number;
+}
+
 // --- SUB-COMPONENTS ---
 const StatCard = ({ icon: Icon, value, label, colorClass, darkMode }: any) => (
   <div className={`rounded-2xl p-6 transition-all duration-300 border hover:scale-[1.02] ${
@@ -97,18 +106,10 @@ const StatCard = ({ icon: Icon, value, label, colorClass, darkMode }: any) => (
   </div>
 );
 
-interface Summary {
-  totalLessons: number;
-  avgScore: number;
-  totalPoints: number;
-  dayStreak: number;
-  learningHours: number;
-}
-
 export default function Progress() {
   const [searchParams] = useSearchParams();
   const darkMode = false;
-  // --- STATE MANAGEMENT ---
+
   const [completedLessons, setCompletedLessons] = useState<Lesson[]>([]);
   const [weeklyStats, setWeeklyStats] = useState<StatItem[]>([]);
   const [recentActivities, setRecentActivities] = useState<Activity[]>([]);
@@ -117,10 +118,23 @@ export default function Progress() {
   const [showDailyReport, setShowDailyReport] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
   const focus = searchParams.get('focus');
   const focusTask = searchParams.get('task');
 
-  // --- DATA FETCHING LOGIC ---
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   useEffect(() => {
     const fetchProgressData = async () => {
       try {
@@ -137,27 +151,16 @@ export default function Progress() {
         ]);
 
         const progressData = progressRes.status === 'fulfilled' ? progressRes.value.data : {};
-        const dashboardStats: DashboardStats =
-          statsRes.status === 'fulfilled' ? (statsRes.value.data?.stats || {}) : {};
-        const dashboardSkills: DashboardSkill[] =
-          skillsRes.status === 'fulfilled' ? (skillsRes.value.data?.skills || []) : [];
-        const dashboardChallenges: DashboardChallenge[] =
-          challengesRes.status === 'fulfilled' ? (challengesRes.value.data?.challenges || []) : [];
-        const dashboardAchievements: DashboardAchievement[] =
-          achievementsRes.status === 'fulfilled' ? (achievementsRes.value.data?.achievements || []) : [];
-        const profile: UserProfile =
-          profileRes.status === 'fulfilled' ? (profileRes.value.data || {}) : {};
+        const dashboardStats: DashboardStats = statsRes.status === 'fulfilled' ? (statsRes.value.data?.stats || {}) : {};
+        const dashboardSkills: DashboardSkill[] = skillsRes.status === 'fulfilled' ? (skillsRes.value.data?.skills || []) : [];
+        const dashboardChallenges: DashboardChallenge[] = challengesRes.status === 'fulfilled' ? (challengesRes.value.data?.challenges || []) : [];
+        const dashboardAchievements: DashboardAchievement[] = achievementsRes.status === 'fulfilled' ? (achievementsRes.value.data?.achievements || []) : [];
+        const profile: UserProfile = profileRes.status === 'fulfilled' ? (profileRes.value.data || {}) : {};
 
         let lessons: Lesson[] = progressData.lessons || [];
         let stats: StatItem[] = progressData.stats || [];
         let activities: Activity[] = progressData.activities || [];
-        const apiSummary: Summary = progressData.summary || {
-          totalLessons: 0,
-          avgScore: 0,
-          totalPoints: 0,
-          dayStreak: 0,
-          learningHours: 0,
-        };
+        const apiSummary: Summary = progressData.summary || { totalLessons: 0, avgScore: 0, totalPoints: 0, dayStreak: 0, learningHours: 0 };
 
         if (lessons.length === 0 && dashboardSkills.length > 0) {
           lessons = dashboardSkills.map((skill, index) => {
@@ -180,7 +183,6 @@ export default function Progress() {
           const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
           const today = new Date().getDay();
           const weekLessons = dashboardStats.lessonsThisWeek || dashboardChallenges.reduce((sum, c) => sum + (c.current || 0), 0);
-
           stats = dayNames.map((day, idx) => ({
             day,
             lessons: idx === today ? weekLessons : 0,
@@ -196,7 +198,6 @@ export default function Progress() {
             time: 'recently',
             icon: '🏆',
           }));
-
           const challengeActivities: Activity[] = dashboardChallenges.slice(0, 3).map((c, index) => ({
             id: index + 101,
             type: 'challenge',
@@ -204,7 +205,6 @@ export default function Progress() {
             time: c.completed ? 'completed' : 'in progress',
             icon: c.completed ? '✅' : '🎯',
           }));
-
           activities = [...achievementActivities, ...challengeActivities];
         }
 
@@ -236,7 +236,7 @@ export default function Progress() {
     };
 
     fetchProgressData();
-  }, []); 
+  }, []);
 
   const maxLessons = useMemo(() => {
     if (weeklyStats.length === 0) return 1;
@@ -312,12 +312,10 @@ export default function Progress() {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(18);
     doc.text('Orato - Daily Learning Report', 14, 18);
-
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(11);
     doc.text(`Generated: ${generatedAt}`, 14, 26);
     doc.text(`Date: ${dailyReport.dateLabel}`, 14, 32);
-
     doc.setFont('helvetica', 'bold');
     doc.text('Student Profile', 14, 44);
     doc.setFont('helvetica', 'normal');
@@ -325,7 +323,6 @@ export default function Progress() {
     doc.text(`Age: ${age}`, 14, 58);
     doc.text(`Native Language: ${nativeLanguage}`, 14, 64);
     doc.text(`Current Level: ${level}`, 14, 70);
-
     doc.setFont('helvetica', 'bold');
     doc.text('Daily Summary', 14, 82);
     doc.setFont('helvetica', 'normal');
@@ -334,7 +331,6 @@ export default function Progress() {
     doc.text(`Average Accuracy: ${dailyReport.avgAccuracy}%`, 14, 102);
     doc.text(`Milestones Today: ${dailyReport.milestonesToday}`, 14, 108);
     doc.text(`Top Lesson: ${dailyReport.topLessonTitle}`, 14, 114);
-
     doc.setFont('helvetica', 'bold');
     doc.text('Progress Snapshot', 14, 126);
     doc.setFont('helvetica', 'normal');
@@ -362,10 +358,7 @@ export default function Progress() {
         <div className="text-center p-8 border rounded-2xl border-red-500/20 bg-red-500/10 max-w-md">
           <h2 className="text-2xl font-bold text-red-500 mb-2">Oops!</h2>
           <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="mt-6 bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-xl transition-all"
-          >
+          <button onClick={() => window.location.reload()} className="mt-6 bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-xl transition-all">
             Try Again
           </button>
         </div>
@@ -377,191 +370,169 @@ export default function Progress() {
     <div className={`flex flex-col min-h-screen ${darkMode ? 'text-white' : 'text-gray-900'}`}>
       <div className={`flex-1 p-6 lg:p-10 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <div className="max-w-7xl mx-auto">
-          
+
           <Navbar />
 
           <div className="mt-8 flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
-          <div>
-            <h1 className="text-4xl font-extrabold tracking-tight">Your Progress</h1>
-            <p className={`mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              Keep it up! You've learned <span className="text-green-500 font-bold">12% more</span> this week.
-            </p>
-          </div>
-          <button
-            onClick={() => setShowDailyReport((prev) => !prev)}
-            className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-5 py-2.5 rounded-xl font-semibold transition-all"
-          >
-            <Calendar size={18} />
-            {showDailyReport ? 'Hide Daily Report' : 'Daily Report'}
-          </button>
-        </div>
-
-        {showDailyReport && (
-          <div className="mb-8 rounded-2xl border border-green-200 bg-green-50 p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-green-900">Daily Report</h2>
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-green-700">{dailyReport.dateLabel}</span>
-                <button
-                  onClick={handleDownloadDailyReport}
-                  className="text-xs bg-white border border-green-200 text-green-700 px-3 py-1.5 rounded-lg hover:bg-green-100 transition-all"
-                >
-                  Download PDF
-                </button>
-              </div>
+            <div>
+              <h1 className="text-4xl font-extrabold tracking-tight">Your Progress</h1>
+              <p className={`mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                Keep it up! You've learned <span className="text-green-500 font-bold">12% more</span> this week.
+              </p>
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-              <div className="rounded-xl bg-white p-3 border border-green-100">
-                <p className="text-xs text-gray-500">Lessons Today</p>
-                <p className="text-lg font-bold text-gray-900">{dailyReport.lessonsCount}</p>
-              </div>
-              <div className="rounded-xl bg-white p-3 border border-green-100">
-                <p className="text-xs text-gray-500">Points Today</p>
-                <p className="text-lg font-bold text-gray-900">{dailyReport.pointsToday}</p>
-              </div>
-              <div className="rounded-xl bg-white p-3 border border-green-100">
-                <p className="text-xs text-gray-500">Avg Accuracy</p>
-                <p className="text-lg font-bold text-gray-900">{dailyReport.avgAccuracy}%</p>
-              </div>
-              <div className="rounded-xl bg-white p-3 border border-green-100">
-                <p className="text-xs text-gray-500">Milestones</p>
-                <p className="text-lg font-bold text-gray-900">{dailyReport.milestonesToday}</p>
-              </div>
-              <div className="rounded-xl bg-white p-3 border border-green-100 sm:col-span-2 lg:col-span-1">
-                <p className="text-xs text-gray-500">Top Lesson</p>
-                <p className="text-sm font-semibold text-gray-900 truncate">{dailyReport.topLessonTitle}</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
-              <div className="rounded-xl bg-white p-3 border border-green-100">
-                <p className="text-xs text-gray-500">Name</p>
-                <p className="text-sm font-semibold text-gray-900 truncate">{userProfile.fullName || 'N/A'}</p>
-              </div>
-              <div className="rounded-xl bg-white p-3 border border-green-100">
-                <p className="text-xs text-gray-500">Age</p>
-                <p className="text-sm font-semibold text-gray-900">{userProfile.age ?? 'N/A'}</p>
-              </div>
-              <div className="rounded-xl bg-white p-3 border border-green-100">
-                <p className="text-xs text-gray-500">Native Language</p>
-                <p className="text-sm font-semibold text-gray-900 truncate">{userProfile.nativeLanguage || 'N/A'}</p>
-              </div>
-              <div className="rounded-xl bg-white p-3 border border-green-100">
-                <p className="text-xs text-gray-500">Current Level</p>
-                <p className="text-sm font-semibold text-gray-900 capitalize">{userProfile.skillLevel || 'N/A'}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          <StatCard 
-            icon={BookOpen} value={summary.totalLessons.toString()} label="Total Lessons" 
-            colorClass="bg-blue-500/10 text-blue-500" darkMode={darkMode} 
-          />
-          <StatCard 
-            icon={Trophy} value={`${summary.avgScore}%`} label="Avg. Accuracy" 
-            colorClass="bg-yellow-500/10 text-yellow-500" darkMode={darkMode} 
-          />
-          <StatCard 
-            icon={Clock} value={`${summary.learningHours}h`} label="Learning Hours" 
-            colorClass="bg-purple-500/10 text-purple-500" darkMode={darkMode} 
-          />
-          <StatCard 
-            icon={TrendingUp} value={`${summary.dayStreak} days`} label="Day Streak" 
-            colorClass="bg-green-500/10 text-green-500" darkMode={darkMode} 
-          />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-8 space-y-6">
-            <div id="progress-lessons" className={`rounded-3xl p-8 border transition-all duration-300 ${darkMode ? 'bg-gray-800/40 border-gray-700' : 'bg-white border-gray-100 shadow-sm'}`}>
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-xl font-bold">Recent Lessons</h2>
-                <button className="text-sm font-semibold text-green-500 hover:underline">View All</button>
-              </div>
-              
-              <div className="space-y-4">
-                {completedLessons.length === 0 ? (
-                  <p className={`text-center py-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No lessons completed yet.</p>
-                ) : (
-                  completedLessons.map((lesson) => (
-                    <div key={lesson.id} className={`group flex items-center justify-between p-4 rounded-2xl border transition-all hover:bg-green-500/[0.02] ${
-                      darkMode ? 'border-gray-700/50 hover:border-green-500/50' : 'border-gray-100 hover:border-green-300'
-                    } ${focusTask && lesson.title === focusTask ? 'ring-2 ring-green-300 ring-offset-1' : ''}`}>
-                      <div className="flex-1 flex items-center gap-4">
-                        <div className="text-3xl bg-gray-100 dark:bg-gray-700 w-12 h-12 flex items-center justify-center rounded-xl">
-                          {lesson.icon}
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-bold">{lesson.title}</h4>
-                          <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
-                            <span className="flex items-center gap-1"><Clock size={12}/> {lesson.duration}</span>
-                            <span className="flex items-center gap-1 text-yellow-500 font-bold"><Star size={12} fill="currentColor"/> {lesson.score}%</span>
-                          </div>
-                          <div className="mt-3 h-2 w-full bg-gray-200 rounded-full overflow-hidden">
-                            <div
-                              className="h-full rounded-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-500"
-                              style={{ width: `${Math.max(0, Math.min(100, lesson.score))}%` }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
+            <button
+              onClick={() => setShowDailyReport((prev) => !prev)}
+              className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-5 py-2.5 rounded-xl font-semibold transition-all"
+            >
+              <Calendar size={18} />
+              {showDailyReport ? 'Hide Daily Report' : 'Daily Report'}
+            </button>
           </div>
 
-          <div className="lg:col-span-4 space-y-8">
-            <div id="progress-weekly" className={`rounded-3xl p-6 border transition-all duration-300 ${darkMode ? 'bg-gray-800/40 border-gray-700' : 'bg-white border-gray-100 shadow-sm'}`}>
-              <h2 className="text-lg font-bold mb-6">Weekly Activity</h2>
-              <div className="flex items-end justify-between gap-2 h-40">
-                {weeklyStats.map((stat) => (
-                  <div key={stat.day} className="flex-1 flex flex-col items-center gap-2 group">
-                    <div 
-                      className={`w-full rounded-lg transition-all duration-500 relative ${
-                        darkMode ? 'bg-green-500/20 group-hover:bg-green-500' : 'bg-green-100 group-hover:bg-green-400'
-                      }`}
-                      style={{ height: `${(stat.lessons / maxLessons) * 100}%` }}
-                    >
-                      <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-[10px] px-2 py-1 rounded">
-                        {stat.lessons}
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-bold text-gray-400 uppercase">{stat.day}</span>
+          {showDailyReport && (
+            <div className="mb-8 rounded-2xl border border-green-200 bg-green-50 p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-green-900">Daily Report</h2>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium text-green-700">{dailyReport.dateLabel}</span>
+                  <button onClick={handleDownloadDailyReport} className="text-xs bg-white border border-green-200 text-green-700 px-3 py-1.5 rounded-lg hover:bg-green-100 transition-all">
+                    Download PDF
+                  </button>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                {[
+                  { label: 'Lessons Today', value: dailyReport.lessonsCount },
+                  { label: 'Points Today', value: dailyReport.pointsToday },
+                  { label: 'Avg Accuracy', value: `${dailyReport.avgAccuracy}%` },
+                  { label: 'Milestones', value: dailyReport.milestonesToday },
+                  { label: 'Top Lesson', value: dailyReport.topLessonTitle, truncate: true, span: true },
+                ].map((item, i) => (
+                  <div key={i} className={`rounded-xl bg-white p-3 border border-green-100 ${item.span ? 'sm:col-span-2 lg:col-span-1' : ''}`}>
+                    <p className="text-xs text-gray-500">{item.label}</p>
+                    <p className={`font-bold text-gray-900 ${item.truncate ? 'text-sm truncate' : 'text-lg'}`}>{item.value}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
+                {[
+                  { label: 'Name', value: userProfile.fullName || 'N/A' },
+                  { label: 'Age', value: userProfile.age ?? 'N/A' },
+                  { label: 'Native Language', value: userProfile.nativeLanguage || 'N/A' },
+                  { label: 'Current Level', value: userProfile.skillLevel || 'N/A', capitalize: true },
+                ].map((item, i) => (
+                  <div key={i} className="rounded-xl bg-white p-3 border border-green-100">
+                    <p className="text-xs text-gray-500">{item.label}</p>
+                    <p className={`text-sm font-semibold text-gray-900 truncate ${item.capitalize ? 'capitalize' : ''}`}>{item.value}</p>
                   </div>
                 ))}
               </div>
             </div>
+          )}
 
-            <div id="progress-milestones" className={`rounded-3xl p-6 border transition-all duration-300 ${darkMode ? 'bg-gray-800/40 border-gray-700' : 'bg-white border-gray-100 shadow-sm'}`}>
-              <h2 className="text-lg font-bold mb-6">Recent Milestones</h2>
-              <div className="space-y-6">
-                {recentActivities.length === 0 ? (
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No recent milestones.</p>
-                ) : (
-                  recentActivities.map((activity) => (
-                    <div key={activity.id} className={`flex items-center gap-4 ${focusTask && activity.title.includes(focusTask) ? 'rounded-lg ring-2 ring-green-300 p-2' : ''}`}>
-                      <div className="text-2xl bg-gray-50 dark:bg-gray-700/50 p-2 rounded-lg">{activity.icon}</div>
-                      <div className="flex-1">
-                        <p className="text-sm font-bold leading-none">{activity.title}</p>
-                        <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <StatCard icon={BookOpen} value={summary.totalLessons.toString()} label="Total Lessons" colorClass="bg-blue-500/10 text-blue-500" darkMode={darkMode} />
+            <StatCard icon={Trophy} value={`${summary.avgScore}%`} label="Avg. Accuracy" colorClass="bg-yellow-500/10 text-yellow-500" darkMode={darkMode} />
+            <StatCard icon={Clock} value={`${summary.learningHours}h`} label="Learning Hours" colorClass="bg-purple-500/10 text-purple-500" darkMode={darkMode} />
+            <StatCard icon={TrendingUp} value={`${summary.dayStreak} days`} label="Day Streak" colorClass="bg-green-500/10 text-green-500" darkMode={darkMode} />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-8 space-y-6">
+              <div id="progress-lessons" className={`rounded-3xl p-8 border transition-all duration-300 ${darkMode ? 'bg-gray-800/40 border-gray-700' : 'bg-white border-gray-100 shadow-sm'}`}>
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-xl font-bold">Recent Lessons</h2>
+                  <button className="text-sm font-semibold text-green-500 hover:underline">View All</button>
+                </div>
+                <div className="space-y-4">
+                  {completedLessons.length === 0 ? (
+                    <p className={`text-center py-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No lessons completed yet.</p>
+                  ) : (
+                    completedLessons.map((lesson) => (
+                      <div key={lesson.id} className={`group flex items-center justify-between p-4 rounded-2xl border transition-all hover:bg-green-500/[0.02] ${
+                        darkMode ? 'border-gray-700/50 hover:border-green-500/50' : 'border-gray-100 hover:border-green-300'
+                      } ${focusTask && lesson.title === focusTask ? 'ring-2 ring-green-300 ring-offset-1' : ''}`}>
+                        <div className="flex-1 flex items-center gap-4">
+                          <div className="text-3xl bg-gray-100 dark:bg-gray-700 w-12 h-12 flex items-center justify-center rounded-xl">{lesson.icon}</div>
+                          <div className="flex-1">
+                            <h4 className="font-bold">{lesson.title}</h4>
+                            <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                              <span className="flex items-center gap-1"><Clock size={12} /> {lesson.duration}</span>
+                              <span className="flex items-center gap-1 text-yellow-500 font-bold"><Star size={12} fill="currentColor" /> {lesson.score}%</span>
+                            </div>
+                            <div className="mt-3 h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                              <div className="h-full rounded-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-500" style={{ width: `${Math.max(0, Math.min(100, lesson.score))}%` }} />
+                            </div>
+                          </div>
+                        </div>
                       </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-4 space-y-8">
+              <div id="progress-weekly" className={`rounded-3xl p-6 border transition-all duration-300 ${darkMode ? 'bg-gray-800/40 border-gray-700' : 'bg-white border-gray-100 shadow-sm'}`}>
+                <h2 className="text-lg font-bold mb-6">Weekly Activity</h2>
+                <div className="flex items-end justify-between gap-2 h-40">
+                  {weeklyStats.map((stat) => (
+                    <div key={stat.day} className="flex-1 flex flex-col items-center gap-2 group">
+                      <div
+                        className={`w-full rounded-lg transition-all duration-500 relative ${darkMode ? 'bg-green-500/20 group-hover:bg-green-500' : 'bg-green-100 group-hover:bg-green-400'}`}
+                        style={{ height: `${(stat.lessons / maxLessons) * 100}%` }}
+                      >
+                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-[10px] px-2 py-1 rounded">
+                          {stat.lessons}
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-bold text-gray-400 uppercase">{stat.day}</span>
                     </div>
-                  ))
-                )}
+                  ))}
+                </div>
+              </div>
+
+              <div id="progress-milestones" className={`rounded-3xl p-6 border transition-all duration-300 ${darkMode ? 'bg-gray-800/40 border-gray-700' : 'bg-white border-gray-100 shadow-sm'}`}>
+                <h2 className="text-lg font-bold mb-6">Recent Milestones</h2>
+                <div className="space-y-6">
+                  {recentActivities.length === 0 ? (
+                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No recent milestones.</p>
+                  ) : (
+                    recentActivities.map((activity) => (
+                      <div key={activity.id} className={`flex items-center gap-4 ${focusTask && activity.title.includes(focusTask) ? 'rounded-lg ring-2 ring-green-300 p-2' : ''}`}>
+                        <div className="text-2xl bg-gray-50 dark:bg-gray-700/50 p-2 rounded-lg">{activity.icon}</div>
+                        <div className="flex-1">
+                          <p className="text-sm font-bold leading-none">{activity.title}</p>
+                          <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
-        </div>
       </div>
 
-      {/* Footer outside main content */}
       <Footer />
+
+      {/* Scroll to Top Button */}
+      <button
+        onClick={scrollToTop}
+        className={`fixed bottom-8 right-8 p-4 rounded-2xl bg-[#1a9e6b] text-white shadow-[0_10px_30px_rgba(26,158,107,0.3)] hover:bg-[#14c781] hover:scale-110 active:scale-95 transition-all duration-500 z-50 group ${
+          showScrollTop ? 'translate-y-0 opacity-100 visible' : 'translate-y-20 opacity-0 invisible'
+        }`}
+        aria-label="Scroll to top"
+      >
+        <span className="flex items-center justify-center group-hover:-translate-y-1 transition-transform duration-300">
+          <FaArrowUp size={20} />
+        </span>
+        <span className="absolute -top-12 left-1/2 -translate-x-1/2 bg-[#0d2d2a] text-white text-xs py-2 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap">
+          Back to Top
+          <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-x-4 border-x-transparent border-t-4 border-t-[#0d2d2a]"></span>
+        </span>
+      </button>
     </div>
   );
 }
